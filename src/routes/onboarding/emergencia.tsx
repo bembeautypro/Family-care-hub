@@ -24,9 +24,9 @@ export const Route = createFileRoute("/onboarding/emergencia")({
 
 const BLOOD = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Não sei"];
 const SEVERITIES = [
-  { value: "leve", label: "Leve", className: "bg-yellow-100 text-yellow-900" },
-  { value: "moderada", label: "Moderada", className: "bg-orange-100 text-orange-900" },
-  { value: "grave", label: "Grave", className: "bg-red-100 text-red-900" },
+  { value: "leve", label: "Leve", db: "low", className: "bg-yellow-100 text-yellow-900" },
+  { value: "moderada", label: "Moderada", db: "medium", className: "bg-orange-100 text-orange-900" },
+  { value: "grave", label: "Grave", db: "high", className: "bg-red-100 text-red-900" },
 ] as const;
 
 type Allergy = { name: string; severity: "leve" | "moderada" | "grave" };

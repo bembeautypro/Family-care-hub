@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { toast } from "sonner";
 
@@ -9,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { OnboardingProgress } from "@/components/onboarding/ProgressBar";
+import { createFamilyWithAdmin } from "@/lib/onboarding.functions";
 
 export const Route = createFileRoute("/onboarding/familia")({
   head: () => ({ meta: [{ title: "Criar família — Amparo" }] }),
@@ -29,8 +31,11 @@ const schema = z.object({
 
 function Familia() {
   const navigate = useNavigate();
+  const createFamily = useServerFn(createFamilyWithAdmin);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ name: "", role: "filho" as string });
+  const [form, setForm] = useState<{ name: string; role: "filho" | "conjuge" | "cuidador" | "outro" }>(
+    { name: "", role: "filho" },
+  );
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -47,35 +52,9 @@ function Familia() {
     }
     setLoading(true);
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      const userId = userData.user?.id;
-      if (!userId) throw new Error("Sessão expirada");
-
-      const { data: family, error: famErr } = await supabase
-        .from("families")
-        .insert({ name: parsed.data.name, created_by: userId })
-        .select("id")
-        .single();
-      if (famErr) throw famErr;
-
-      const { error: memErr } = await supabase.from("family_members").insert({
-        family_id: family.id,
-        user_id: userId,
-        role: "admin",
-        status: "active",
-      });
-      if (memErr) throw memErr;
-
-      const { error: profErr } = await supabase
-        .from("profiles")
-        .update({ onboarding_step: 1 })
-        .eq("id", userId);
-      if (profErr) throw profErr;
-
-      // Store family id locally for next steps
-      sessionStorage.setItem("amparo_onboarding_family_id", family.id);
-      sessionStorage.setItem("amparo_onboarding_role", parsed.data.role);
-
+      const result = await createFamily({ data: parsed.data });
+      sessionStorage.setItem("amparo_onboarding_family_id", result.familyId);
+      sessionStorage.setItem("amparo_onboarding_role", result.role);
       navigate({ to: "/onboarding/familiar" });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erro ao criar família";
@@ -113,7 +92,7 @@ function Familia() {
           <Label>Seu papel</Label>
           <RadioGroup
             value={form.role}
-            onValueChange={(v) => setForm({ ...form, role: v })}
+            onValueChange={(v) => setForm({ ...form, role: v as typeof form.role })}
             className="grid grid-cols-2 gap-3"
           >
             {ROLES.map((r) => (
