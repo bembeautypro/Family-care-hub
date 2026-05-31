@@ -29,6 +29,7 @@ import { Route as AuthRegistroRouteImport } from './routes/auth/registro'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AgendaNovaRouteImport } from './routes/agenda.nova'
 import { Route as MedicamentosIdEditarRouteImport } from './routes/medicamentos.$id.editar'
+import { Route as AgendaIdEditarRouteImport } from './routes/agenda.$id.editar'
 
 const PerfilRoute = PerfilRouteImport.update({
   id: '/perfil',
@@ -130,6 +131,11 @@ const MedicamentosIdEditarRoute = MedicamentosIdEditarRouteImport.update({
   path: '/medicamentos/$id/editar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AgendaIdEditarRoute = AgendaIdEditarRouteImport.update({
+  id: '/agenda/$id/editar',
+  path: '/agenda/$id/editar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -151,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/agenda/': typeof AgendaIndexRoute
   '/documentos/': typeof DocumentosIndexRoute
   '/medicamentos/': typeof MedicamentosIndexRoute
+  '/agenda/$id/editar': typeof AgendaIdEditarRoute
   '/medicamentos/$id/editar': typeof MedicamentosIdEditarRoute
 }
 export interface FileRoutesByTo {
@@ -173,6 +180,7 @@ export interface FileRoutesByTo {
   '/agenda': typeof AgendaIndexRoute
   '/documentos': typeof DocumentosIndexRoute
   '/medicamentos': typeof MedicamentosIndexRoute
+  '/agenda/$id/editar': typeof AgendaIdEditarRoute
   '/medicamentos/$id/editar': typeof MedicamentosIdEditarRoute
 }
 export interface FileRoutesById {
@@ -196,6 +204,7 @@ export interface FileRoutesById {
   '/agenda/': typeof AgendaIndexRoute
   '/documentos/': typeof DocumentosIndexRoute
   '/medicamentos/': typeof MedicamentosIndexRoute
+  '/agenda/$id/editar': typeof AgendaIdEditarRoute
   '/medicamentos/$id/editar': typeof MedicamentosIdEditarRoute
 }
 export interface FileRouteTypes {
@@ -220,6 +229,7 @@ export interface FileRouteTypes {
     | '/agenda/'
     | '/documentos/'
     | '/medicamentos/'
+    | '/agenda/$id/editar'
     | '/medicamentos/$id/editar'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -242,6 +252,7 @@ export interface FileRouteTypes {
     | '/agenda'
     | '/documentos'
     | '/medicamentos'
+    | '/agenda/$id/editar'
     | '/medicamentos/$id/editar'
   id:
     | '__root__'
@@ -264,6 +275,7 @@ export interface FileRouteTypes {
     | '/agenda/'
     | '/documentos/'
     | '/medicamentos/'
+    | '/agenda/$id/editar'
     | '/medicamentos/$id/editar'
   fileRoutesById: FileRoutesById
 }
@@ -287,6 +299,7 @@ export interface RootRouteChildren {
   AgendaIndexRoute: typeof AgendaIndexRoute
   DocumentosIndexRoute: typeof DocumentosIndexRoute
   MedicamentosIndexRoute: typeof MedicamentosIndexRoute
+  AgendaIdEditarRoute: typeof AgendaIdEditarRoute
   MedicamentosIdEditarRoute: typeof MedicamentosIdEditarRoute
 }
 
@@ -432,6 +445,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MedicamentosIdEditarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/agenda/$id/editar': {
+      id: '/agenda/$id/editar'
+      path: '/agenda/$id/editar'
+      fullPath: '/agenda/$id/editar'
+      preLoaderRoute: typeof AgendaIdEditarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -455,6 +475,7 @@ const rootRouteChildren: RootRouteChildren = {
   AgendaIndexRoute: AgendaIndexRoute,
   DocumentosIndexRoute: DocumentosIndexRoute,
   MedicamentosIndexRoute: MedicamentosIndexRoute,
+  AgendaIdEditarRoute: AgendaIdEditarRoute,
   MedicamentosIdEditarRoute: MedicamentosIdEditarRoute,
 }
 export const routeTree = rootRouteImport
