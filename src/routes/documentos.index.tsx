@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/documentos")({
+export const Route = createFileRoute("/documentos/")({
   head: () => ({ meta: [{ title: "Documentos — Amparo" }] }),
   component: () => (
     <main className="min-h-screen bg-background px-5 py-8 pb-24">
