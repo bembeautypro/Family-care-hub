@@ -107,9 +107,9 @@ const EventosNovoRoute = EventosNovoRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocumentosNovoRoute = DocumentosNovoRouteImport.update({
-  id: '/novo',
-  path: '/novo',
-  getParentRoute: () => DocumentosRoute,
+  id: '/documentos/novo',
+  path: '/documentos/novo',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRegistroRoute = AuthRegistroRouteImport.update({
   id: '/auth/registro',
@@ -289,6 +289,7 @@ export interface RootRouteChildren {
   AgendaNovaRoute: typeof AgendaNovaRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegistroRoute: typeof AuthRegistroRoute
+  DocumentosNovoRoute: typeof DocumentosNovoRoute
   EventosNovoRoute: typeof EventosNovoRoute
   MedicamentosNovoRoute: typeof MedicamentosNovoRoute
   OnboardingEmergenciaRoute: typeof OnboardingEmergenciaRoute
@@ -411,10 +412,10 @@ declare module '@tanstack/react-router' {
     }
     '/documentos/novo': {
       id: '/documentos/novo'
-      path: '/novo'
+      path: '/documentos/novo'
       fullPath: '/documentos/novo'
       preLoaderRoute: typeof DocumentosNovoRouteImport
-      parentRoute: typeof DocumentosRoute
+      parentRoute: typeof rootRouteImport
     }
     '/auth/registro': {
       id: '/auth/registro'
@@ -464,6 +465,7 @@ const rootRouteChildren: RootRouteChildren = {
   AgendaNovaRoute: AgendaNovaRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegistroRoute: AuthRegistroRoute,
+  DocumentosNovoRoute: DocumentosNovoRoute,
   EventosNovoRoute: EventosNovoRoute,
   MedicamentosNovoRoute: MedicamentosNovoRoute,
   OnboardingEmergenciaRoute: OnboardingEmergenciaRoute,
@@ -479,13 +481,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
