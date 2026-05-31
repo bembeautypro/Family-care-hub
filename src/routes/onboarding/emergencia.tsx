@@ -107,7 +107,11 @@ function Emergencia() {
     try {
       const { patientId, userId } = await getPatientId();
 
-      const updates: Record<string, string | null> = {};
+      const updates: {
+        blood_type?: string;
+        health_insurance_name?: string;
+        health_insurance_number?: string;
+      } = {};
       if (bloodType && bloodType !== "Não sei") updates.blood_type = bloodType;
       if (insurance.name) updates.health_insurance_name = insurance.name;
       if (insurance.number) updates.health_insurance_number = insurance.number;
