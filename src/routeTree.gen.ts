@@ -9,38 +9,140 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OnboardingPrimeiraAcaoRouteImport } from './routes/onboarding/primeira-acao'
+import { Route as OnboardingFamiliarRouteImport } from './routes/onboarding/familiar'
+import { Route as OnboardingFamiliaRouteImport } from './routes/onboarding/familia'
+import { Route as OnboardingEmergenciaRouteImport } from './routes/onboarding/emergencia'
+import { Route as AuthRegistroRouteImport } from './routes/auth/registro'
+import { Route as AuthLoginRouteImport } from './routes/auth/login'
 
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OnboardingPrimeiraAcaoRoute = OnboardingPrimeiraAcaoRouteImport.update({
+  id: '/onboarding/primeira-acao',
+  path: '/onboarding/primeira-acao',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingFamiliarRoute = OnboardingFamiliarRouteImport.update({
+  id: '/onboarding/familiar',
+  path: '/onboarding/familiar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingFamiliaRoute = OnboardingFamiliaRouteImport.update({
+  id: '/onboarding/familia',
+  path: '/onboarding/familia',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingEmergenciaRoute = OnboardingEmergenciaRouteImport.update({
+  id: '/onboarding/emergencia',
+  path: '/onboarding/emergencia',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRegistroRoute = AuthRegistroRouteImport.update({
+  id: '/auth/registro',
+  path: '/auth/registro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/auth/login',
+  path: '/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/registro': typeof AuthRegistroRoute
+  '/onboarding/emergencia': typeof OnboardingEmergenciaRoute
+  '/onboarding/familia': typeof OnboardingFamiliaRoute
+  '/onboarding/familiar': typeof OnboardingFamiliarRoute
+  '/onboarding/primeira-acao': typeof OnboardingPrimeiraAcaoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/registro': typeof AuthRegistroRoute
+  '/onboarding/emergencia': typeof OnboardingEmergenciaRoute
+  '/onboarding/familia': typeof OnboardingFamiliaRoute
+  '/onboarding/familiar': typeof OnboardingFamiliarRoute
+  '/onboarding/primeira-acao': typeof OnboardingPrimeiraAcaoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/registro': typeof AuthRegistroRoute
+  '/onboarding/emergencia': typeof OnboardingEmergenciaRoute
+  '/onboarding/familia': typeof OnboardingFamiliaRoute
+  '/onboarding/familiar': typeof OnboardingFamiliarRoute
+  '/onboarding/primeira-acao': typeof OnboardingPrimeiraAcaoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/auth/login'
+    | '/auth/registro'
+    | '/onboarding/emergencia'
+    | '/onboarding/familia'
+    | '/onboarding/familiar'
+    | '/onboarding/primeira-acao'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/auth/login'
+    | '/auth/registro'
+    | '/onboarding/emergencia'
+    | '/onboarding/familia'
+    | '/onboarding/familiar'
+    | '/onboarding/primeira-acao'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard'
+    | '/auth/login'
+    | '/auth/registro'
+    | '/onboarding/emergencia'
+    | '/onboarding/familia'
+    | '/onboarding/familiar'
+    | '/onboarding/primeira-acao'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRoute: typeof DashboardRoute
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthRegistroRoute: typeof AuthRegistroRoute
+  OnboardingEmergenciaRoute: typeof OnboardingEmergenciaRoute
+  OnboardingFamiliaRoute: typeof OnboardingFamiliaRoute
+  OnboardingFamiliarRoute: typeof OnboardingFamiliarRoute
+  OnboardingPrimeiraAcaoRoute: typeof OnboardingPrimeiraAcaoRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,12 +150,71 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/onboarding/primeira-acao': {
+      id: '/onboarding/primeira-acao'
+      path: '/onboarding/primeira-acao'
+      fullPath: '/onboarding/primeira-acao'
+      preLoaderRoute: typeof OnboardingPrimeiraAcaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/familiar': {
+      id: '/onboarding/familiar'
+      path: '/onboarding/familiar'
+      fullPath: '/onboarding/familiar'
+      preLoaderRoute: typeof OnboardingFamiliarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/familia': {
+      id: '/onboarding/familia'
+      path: '/onboarding/familia'
+      fullPath: '/onboarding/familia'
+      preLoaderRoute: typeof OnboardingFamiliaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/emergencia': {
+      id: '/onboarding/emergencia'
+      path: '/onboarding/emergencia'
+      fullPath: '/onboarding/emergencia'
+      preLoaderRoute: typeof OnboardingEmergenciaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/registro': {
+      id: '/auth/registro'
+      path: '/auth/registro'
+      fullPath: '/auth/registro'
+      preLoaderRoute: typeof AuthRegistroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRoute: DashboardRoute,
+  AuthLoginRoute: AuthLoginRoute,
+  AuthRegistroRoute: AuthRegistroRoute,
+  OnboardingEmergenciaRoute: OnboardingEmergenciaRoute,
+  OnboardingFamiliaRoute: OnboardingFamiliaRoute,
+  OnboardingFamiliarRoute: OnboardingFamiliarRoute,
+  OnboardingPrimeiraAcaoRoute: OnboardingPrimeiraAcaoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
