@@ -28,6 +28,7 @@ import { Route as DocumentosNovoRouteImport } from './routes/documentos.novo'
 import { Route as AuthRegistroRouteImport } from './routes/auth/registro'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AgendaNovaRouteImport } from './routes/agenda.nova'
+import { Route as MedicamentosIdEditarRouteImport } from './routes/medicamentos.$id.editar'
 
 const PerfilRoute = PerfilRouteImport.update({
   id: '/perfil',
@@ -95,9 +96,9 @@ const OnboardingEmergenciaRoute = OnboardingEmergenciaRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const MedicamentosNovoRoute = MedicamentosNovoRouteImport.update({
-  id: '/novo',
-  path: '/novo',
-  getParentRoute: () => MedicamentosRoute,
+  id: '/medicamentos/novo',
+  path: '/medicamentos/novo',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const EventosNovoRoute = EventosNovoRouteImport.update({
   id: '/eventos/novo',
@@ -105,9 +106,9 @@ const EventosNovoRoute = EventosNovoRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocumentosNovoRoute = DocumentosNovoRouteImport.update({
-  id: '/novo',
-  path: '/novo',
-  getParentRoute: () => DocumentosRoute,
+  id: '/documentos/novo',
+  path: '/documentos/novo',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRegistroRoute = AuthRegistroRouteImport.update({
   id: '/auth/registro',
@@ -120,9 +121,14 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AgendaNovaRoute = AgendaNovaRouteImport.update({
-  id: '/nova',
-  path: '/nova',
-  getParentRoute: () => AgendaRoute,
+  id: '/agenda/nova',
+  path: '/agenda/nova',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MedicamentosIdEditarRoute = MedicamentosIdEditarRouteImport.update({
+  id: '/medicamentos/$id/editar',
+  path: '/medicamentos/$id/editar',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/agenda/': typeof AgendaIndexRoute
   '/documentos/': typeof DocumentosIndexRoute
   '/medicamentos/': typeof MedicamentosIndexRoute
+  '/medicamentos/$id/editar': typeof MedicamentosIdEditarRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -166,6 +173,7 @@ export interface FileRoutesByTo {
   '/agenda': typeof AgendaIndexRoute
   '/documentos': typeof DocumentosIndexRoute
   '/medicamentos': typeof MedicamentosIndexRoute
+  '/medicamentos/$id/editar': typeof MedicamentosIdEditarRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -188,6 +196,7 @@ export interface FileRoutesById {
   '/agenda/': typeof AgendaIndexRoute
   '/documentos/': typeof DocumentosIndexRoute
   '/medicamentos/': typeof MedicamentosIndexRoute
+  '/medicamentos/$id/editar': typeof MedicamentosIdEditarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -211,6 +220,7 @@ export interface FileRouteTypes {
     | '/agenda/'
     | '/documentos/'
     | '/medicamentos/'
+    | '/medicamentos/$id/editar'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -232,6 +242,7 @@ export interface FileRouteTypes {
     | '/agenda'
     | '/documentos'
     | '/medicamentos'
+    | '/medicamentos/$id/editar'
   id:
     | '__root__'
     | '/'
@@ -253,6 +264,7 @@ export interface FileRouteTypes {
     | '/agenda/'
     | '/documentos/'
     | '/medicamentos/'
+    | '/medicamentos/$id/editar'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -262,9 +274,12 @@ export interface RootRouteChildren {
   FamiliaRoute: typeof FamiliaRoute
   HistoricoRoute: typeof HistoricoRoute
   PerfilRoute: typeof PerfilRoute
+  AgendaNovaRoute: typeof AgendaNovaRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegistroRoute: typeof AuthRegistroRoute
+  DocumentosNovoRoute: typeof DocumentosNovoRoute
   EventosNovoRoute: typeof EventosNovoRoute
+  MedicamentosNovoRoute: typeof MedicamentosNovoRoute
   OnboardingEmergenciaRoute: typeof OnboardingEmergenciaRoute
   OnboardingFamiliaRoute: typeof OnboardingFamiliaRoute
   OnboardingFamiliarRoute: typeof OnboardingFamiliarRoute
@@ -272,6 +287,7 @@ export interface RootRouteChildren {
   AgendaIndexRoute: typeof AgendaIndexRoute
   DocumentosIndexRoute: typeof DocumentosIndexRoute
   MedicamentosIndexRoute: typeof MedicamentosIndexRoute
+  MedicamentosIdEditarRoute: typeof MedicamentosIdEditarRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -369,10 +385,10 @@ declare module '@tanstack/react-router' {
     }
     '/medicamentos/novo': {
       id: '/medicamentos/novo'
-      path: '/novo'
+      path: '/medicamentos/novo'
       fullPath: '/medicamentos/novo'
       preLoaderRoute: typeof MedicamentosNovoRouteImport
-      parentRoute: typeof MedicamentosRoute
+      parentRoute: typeof rootRouteImport
     }
     '/eventos/novo': {
       id: '/eventos/novo'
@@ -383,10 +399,10 @@ declare module '@tanstack/react-router' {
     }
     '/documentos/novo': {
       id: '/documentos/novo'
-      path: '/novo'
+      path: '/documentos/novo'
       fullPath: '/documentos/novo'
       preLoaderRoute: typeof DocumentosNovoRouteImport
-      parentRoute: typeof DocumentosRoute
+      parentRoute: typeof rootRouteImport
     }
     '/auth/registro': {
       id: '/auth/registro'
@@ -404,10 +420,17 @@ declare module '@tanstack/react-router' {
     }
     '/agenda/nova': {
       id: '/agenda/nova'
-      path: '/nova'
+      path: '/agenda/nova'
       fullPath: '/agenda/nova'
       preLoaderRoute: typeof AgendaNovaRouteImport
-      parentRoute: typeof AgendaRoute
+      parentRoute: typeof rootRouteImport
+    }
+    '/medicamentos/$id/editar': {
+      id: '/medicamentos/$id/editar'
+      path: '/medicamentos/$id/editar'
+      fullPath: '/medicamentos/$id/editar'
+      preLoaderRoute: typeof MedicamentosIdEditarRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -419,9 +442,12 @@ const rootRouteChildren: RootRouteChildren = {
   FamiliaRoute: FamiliaRoute,
   HistoricoRoute: HistoricoRoute,
   PerfilRoute: PerfilRoute,
+  AgendaNovaRoute: AgendaNovaRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegistroRoute: AuthRegistroRoute,
+  DocumentosNovoRoute: DocumentosNovoRoute,
   EventosNovoRoute: EventosNovoRoute,
+  MedicamentosNovoRoute: MedicamentosNovoRoute,
   OnboardingEmergenciaRoute: OnboardingEmergenciaRoute,
   OnboardingFamiliaRoute: OnboardingFamiliaRoute,
   OnboardingFamiliarRoute: OnboardingFamiliarRoute,
@@ -429,17 +455,8 @@ const rootRouteChildren: RootRouteChildren = {
   AgendaIndexRoute: AgendaIndexRoute,
   DocumentosIndexRoute: DocumentosIndexRoute,
   MedicamentosIndexRoute: MedicamentosIndexRoute,
+  MedicamentosIdEditarRoute: MedicamentosIdEditarRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
