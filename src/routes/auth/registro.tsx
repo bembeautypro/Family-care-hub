@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, MailCheck } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,8 @@ const schema = z
 function Registro() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -46,7 +48,7 @@ function Registro() {
     }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: parsed.data.email,
         password: parsed.data.password,
         options: {
@@ -55,14 +57,82 @@ function Registro() {
         },
       });
       if (error) throw error;
-      toast.success("Conta criada!");
-      navigate({ to: "/onboarding/familia" });
+      // With email confirmation required, session is null until the user clicks
+      // the link. Show the verification screen.
+      if (data.session) {
+        // Edge case: project somehow auto-confirms — proceed directly.
+        navigate({ to: "/onboarding/familia" });
+        return;
+      }
+      setSubmittedEmail(parsed.data.email);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erro ao criar conta";
       toast.error(msg);
     } finally {
       setLoading(false);
     }
+  }
+
+  async function onResend() {
+    if (!submittedEmail) return;
+    setResending(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: submittedEmail,
+        options: {
+          emailRedirectTo: `${window.location.origin}/onboarding/familia`,
+        },
+      });
+      if (error) throw error;
+      toast.success("E-mail reenviado");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Falha ao reenviar");
+    } finally {
+      setResending(false);
+    }
+  }
+
+  if (submittedEmail) {
+    return (
+      <main className="flex min-h-screen flex-col bg-background px-5 py-6">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" /> Voltar
+        </Link>
+
+        <div className="flex flex-1 flex-col items-center justify-center text-center">
+          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/10">
+            <MailCheck className="h-10 w-10 text-primary" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground">
+            Verifique seu e-mail
+          </h1>
+          <p className="mt-3 max-w-sm text-sm text-muted-foreground">
+            Enviamos um link de confirmação para{" "}
+            <span className="font-medium text-foreground">{submittedEmail}</span>.
+            Abra a mensagem e clique no link para continuar.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-3 pb-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onResend}
+            disabled={resending}
+            className="h-[52px] w-full text-base"
+          >
+            {resending ? "Reenviando..." : "Reenviar e-mail"}
+          </Button>
+          <Button asChild className="h-[52px] w-full text-base">
+            <Link to="/auth/login">Já confirmei — Entrar</Link>
+          </Button>
+        </div>
+      </main>
+    );
   }
 
   return (

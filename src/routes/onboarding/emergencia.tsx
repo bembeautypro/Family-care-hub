@@ -124,7 +124,8 @@ function Emergencia() {
           allergies.map((a) => ({
             patient_id: patientId,
             allergy: a.name,
-            severity: a.severity,
+            severity:
+              SEVERITIES.find((s) => s.value === a.severity)?.db ?? "low",
           })),
         );
       }
@@ -168,16 +169,15 @@ function Emergencia() {
 
   return (
     <main className="min-h-screen bg-background px-5 py-6">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1">
-          <OnboardingProgress current={5} total={5} />
-        </div>
+      <OnboardingProgress current={5} total={5} />
+
+      <div className="mt-4 flex justify-end">
         <Button
-          variant="ghost"
-          size="sm"
+          type="button"
+          variant="outline"
           onClick={onSkip}
           disabled={skipping || loading}
-          className="shrink-0 text-primary"
+          className="h-[44px] px-4 text-sm font-medium"
         >
           Preencher depois →
         </Button>
