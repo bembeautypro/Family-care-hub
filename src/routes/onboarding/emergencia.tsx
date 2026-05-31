@@ -24,9 +24,9 @@ export const Route = createFileRoute("/onboarding/emergencia")({
 
 const BLOOD = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Não sei"];
 const SEVERITIES = [
-  { value: "leve", label: "Leve", className: "bg-yellow-100 text-yellow-900" },
-  { value: "moderada", label: "Moderada", className: "bg-orange-100 text-orange-900" },
-  { value: "grave", label: "Grave", className: "bg-red-100 text-red-900" },
+  { value: "leve", label: "Leve", db: "low", className: "bg-yellow-100 text-yellow-900" },
+  { value: "moderada", label: "Moderada", db: "medium", className: "bg-orange-100 text-orange-900" },
+  { value: "grave", label: "Grave", db: "high", className: "bg-red-100 text-red-900" },
 ] as const;
 
 type Allergy = { name: string; severity: "leve" | "moderada" | "grave" };
@@ -124,7 +124,8 @@ function Emergencia() {
           allergies.map((a) => ({
             patient_id: patientId,
             allergy: a.name,
-            severity: a.severity,
+            severity:
+              SEVERITIES.find((s) => s.value === a.severity)?.db ?? "low",
           })),
         );
       }
@@ -168,16 +169,15 @@ function Emergencia() {
 
   return (
     <main className="min-h-screen bg-background px-5 py-6">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1">
-          <OnboardingProgress current={5} total={5} />
-        </div>
+      <OnboardingProgress current={5} total={5} />
+
+      <div className="mt-4 flex justify-end">
         <Button
-          variant="ghost"
-          size="sm"
+          type="button"
+          variant="outline"
           onClick={onSkip}
           disabled={skipping || loading}
-          className="shrink-0 text-primary"
+          className="h-[44px] px-4 text-sm font-medium"
         >
           Preencher depois →
         </Button>
