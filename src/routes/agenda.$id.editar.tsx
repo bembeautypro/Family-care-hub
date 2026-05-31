@@ -41,12 +41,14 @@ function EditarCompromisso() {
         navigate({ to: "/agenda" });
         return;
       }
-      const { data: pat } = await supabase
-        .from("patients")
-        .select("family_id")
-        .eq("id", data.patient_id)
-        .maybeSingle();
-      setFamilyId(pat?.family_id ?? null);
+      if (data.patient_id) {
+        const { data: pat } = await supabase
+          .from("patients")
+          .select("family_id")
+          .eq("id", data.patient_id)
+          .maybeSingle();
+        setFamilyId(pat?.family_id ?? null);
+      }
       if (data.parent_appointment_id) {
         const { data: parent } = await supabase
           .from("appointments")
