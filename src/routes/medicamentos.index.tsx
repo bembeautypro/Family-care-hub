@@ -9,7 +9,7 @@ function Stub({ title }: { title: string }) {
   );
 }
 
-export const Route = createFileRoute("/medicamentos")({
+export const Route = createFileRoute("/medicamentos/")({
   head: () => ({ meta: [{ title: "Medicamentos — Amparo" }] }),
   component: () => <Stub title="Medicamentos" />,
 });
