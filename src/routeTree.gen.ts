@@ -29,6 +29,7 @@ import { Route as AuthRegistroRouteImport } from './routes/auth/registro'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AgendaNovaRouteImport } from './routes/agenda.nova'
 import { Route as MedicamentosIdEditarRouteImport } from './routes/medicamentos.$id.editar'
+import { Route as EventosIdEditarRouteImport } from './routes/eventos.$id.editar'
 import { Route as AgendaIdEditarRouteImport } from './routes/agenda.$id.editar'
 
 const PerfilRoute = PerfilRouteImport.update({
@@ -131,6 +132,11 @@ const MedicamentosIdEditarRoute = MedicamentosIdEditarRouteImport.update({
   path: '/medicamentos/$id/editar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EventosIdEditarRoute = EventosIdEditarRouteImport.update({
+  id: '/eventos/$id/editar',
+  path: '/eventos/$id/editar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AgendaIdEditarRoute = AgendaIdEditarRouteImport.update({
   id: '/agenda/$id/editar',
   path: '/agenda/$id/editar',
@@ -158,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/documentos/': typeof DocumentosIndexRoute
   '/medicamentos/': typeof MedicamentosIndexRoute
   '/agenda/$id/editar': typeof AgendaIdEditarRoute
+  '/eventos/$id/editar': typeof EventosIdEditarRoute
   '/medicamentos/$id/editar': typeof MedicamentosIdEditarRoute
 }
 export interface FileRoutesByTo {
@@ -181,6 +188,7 @@ export interface FileRoutesByTo {
   '/documentos': typeof DocumentosIndexRoute
   '/medicamentos': typeof MedicamentosIndexRoute
   '/agenda/$id/editar': typeof AgendaIdEditarRoute
+  '/eventos/$id/editar': typeof EventosIdEditarRoute
   '/medicamentos/$id/editar': typeof MedicamentosIdEditarRoute
 }
 export interface FileRoutesById {
@@ -205,6 +213,7 @@ export interface FileRoutesById {
   '/documentos/': typeof DocumentosIndexRoute
   '/medicamentos/': typeof MedicamentosIndexRoute
   '/agenda/$id/editar': typeof AgendaIdEditarRoute
+  '/eventos/$id/editar': typeof EventosIdEditarRoute
   '/medicamentos/$id/editar': typeof MedicamentosIdEditarRoute
 }
 export interface FileRouteTypes {
@@ -230,6 +239,7 @@ export interface FileRouteTypes {
     | '/documentos/'
     | '/medicamentos/'
     | '/agenda/$id/editar'
+    | '/eventos/$id/editar'
     | '/medicamentos/$id/editar'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -253,6 +263,7 @@ export interface FileRouteTypes {
     | '/documentos'
     | '/medicamentos'
     | '/agenda/$id/editar'
+    | '/eventos/$id/editar'
     | '/medicamentos/$id/editar'
   id:
     | '__root__'
@@ -276,6 +287,7 @@ export interface FileRouteTypes {
     | '/documentos/'
     | '/medicamentos/'
     | '/agenda/$id/editar'
+    | '/eventos/$id/editar'
     | '/medicamentos/$id/editar'
   fileRoutesById: FileRoutesById
 }
@@ -300,6 +312,7 @@ export interface RootRouteChildren {
   DocumentosIndexRoute: typeof DocumentosIndexRoute
   MedicamentosIndexRoute: typeof MedicamentosIndexRoute
   AgendaIdEditarRoute: typeof AgendaIdEditarRoute
+  EventosIdEditarRoute: typeof EventosIdEditarRoute
   MedicamentosIdEditarRoute: typeof MedicamentosIdEditarRoute
 }
 
@@ -445,6 +458,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MedicamentosIdEditarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/eventos/$id/editar': {
+      id: '/eventos/$id/editar'
+      path: '/eventos/$id/editar'
+      fullPath: '/eventos/$id/editar'
+      preLoaderRoute: typeof EventosIdEditarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/agenda/$id/editar': {
       id: '/agenda/$id/editar'
       path: '/agenda/$id/editar'
@@ -476,8 +496,19 @@ const rootRouteChildren: RootRouteChildren = {
   DocumentosIndexRoute: DocumentosIndexRoute,
   MedicamentosIndexRoute: MedicamentosIndexRoute,
   AgendaIdEditarRoute: AgendaIdEditarRoute,
+  EventosIdEditarRoute: EventosIdEditarRoute,
   MedicamentosIdEditarRoute: MedicamentosIdEditarRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
