@@ -7,12 +7,7 @@ import viteReact from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [
-    tanstackStart({
-      router: {
-        routesDirectory: "./src/routes",
-        generatedRouteTree: "./src/routeTree.gen.ts",
-      },
-    }),
+    tanstackStart(),
     nitro({ preset: "vercel" }),
     tailwindcss(),
     tsConfigPaths(),
