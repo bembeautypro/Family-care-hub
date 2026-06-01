@@ -3,15 +3,22 @@ import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 
 import { supabase } from "@/integrations/supabase/client";
+import { acceptInvitation } from "@/lib/familia.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { onboardingRouteForStep } from "@/lib/onboarding/redirect";
 
+const searchSchema = z.object({
+  invite: z.string().optional(),
+});
+
 export const Route = createFileRoute("/auth/login")({
   head: () => ({ meta: [{ title: "Entrar — Amparo" }] }),
+  validateSearch: (search) => searchSchema.parse(search),
   component: Login,
 });
 
@@ -22,8 +29,11 @@ const schema = z.object({
 
 function Login() {
   const navigate = useNavigate();
+  const search = Route.useSearch();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
+
+  const acceptInvite = useServerFn(acceptInvitation);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -39,6 +49,26 @@ function Login() {
         password: parsed.data.password,
       });
       if (error) throw error;
+
+      // Accept pending invite if present
+      if (search.invite) {
+        try {
+          const result = await acceptInvite({ data: { token: search.invite } });
+          if (result.alreadyMember) {
+            toast.info("Você já é membro desta família.");
+          } else {
+            toast.success("Convite aceito! Bem-vindo à família.");
+          }
+          navigate({ to: "/dashboard" });
+          return;
+        } catch (invErr) {
+          toast.error(
+            invErr instanceof Error ? invErr.message : "Erro ao aceitar convite",
+          );
+          // Continue to normal onboarding flow even if invite fails
+        }
+      }
+
       const userId = data.user?.id;
       let step = 0;
       if (userId) {
@@ -111,7 +141,11 @@ function Login() {
 
         <p className="text-center text-sm text-muted-foreground">
           Ainda não tem conta?{" "}
-          <Link to="/auth/registro" className="font-medium text-primary">
+          <Link
+            to="/auth/registro"
+            search={search.invite ? { invite: search.invite } : {}}
+            className="font-medium text-primary"
+          >
             Criar conta
           </Link>
         </p>

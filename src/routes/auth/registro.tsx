@@ -3,15 +3,22 @@ import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { ArrowLeft, MailCheck } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 
 import { supabase } from "@/integrations/supabase/client";
+import { acceptInvitation } from "@/lib/familia.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { OnboardingProgress } from "@/components/onboarding/ProgressBar";
 
+const searchSchema = z.object({
+  invite: z.string().optional(),
+});
+
 export const Route = createFileRoute("/auth/registro")({
   head: () => ({ meta: [{ title: "Criar conta — Amparo" }] }),
+  validateSearch: (search) => searchSchema.parse(search),
   component: Registro,
 });
 
@@ -29,6 +36,7 @@ const schema = z
 
 function Registro() {
   const navigate = useNavigate();
+  const search = Route.useSearch();
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
@@ -39,6 +47,8 @@ function Registro() {
     confirm: "",
   });
 
+  const acceptInvite = useServerFn(acceptInvitation);
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     const parsed = schema.safeParse(form);
@@ -48,20 +58,47 @@ function Registro() {
     }
     setLoading(true);
     try {
+      // Build redirect URL — include invite token so it survives email confirmation
+      const redirectBase = search.invite
+        ? `${window.location.origin}/convite/${search.invite}`
+        : `${window.location.origin}/onboarding/familia`;
+
       const { data, error } = await supabase.auth.signUp({
         email: parsed.data.email,
         password: parsed.data.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/onboarding/familia`,
+          emailRedirectTo: redirectBase,
           data: { full_name: parsed.data.fullName },
         },
       });
       if (error) throw error;
+
       // With email confirmation required, session is null until the user clicks
       // the link. Show the verification screen.
       if (data.session) {
         // Edge case: project somehow auto-confirms — proceed directly.
-        navigate({ to: "/onboarding/familia" });
+        if (search.invite) {
+          try {
+            const result = await acceptInvite({
+              data: { token: search.invite },
+            });
+            if (result.alreadyMember) {
+              toast.info("Você já é membro desta família.");
+            } else {
+              toast.success("Convite aceito! Bem-vindo à família.");
+            }
+            navigate({ to: "/dashboard" });
+          } catch (invErr) {
+            toast.error(
+              invErr instanceof Error
+                ? invErr.message
+                : "Erro ao aceitar convite",
+            );
+            navigate({ to: "/onboarding/familia" });
+          }
+        } else {
+          navigate({ to: "/onboarding/familia" });
+        }
         return;
       }
       setSubmittedEmail(parsed.data.email);
@@ -77,11 +114,15 @@ function Registro() {
     if (!submittedEmail) return;
     setResending(true);
     try {
+      const redirectBase = search.invite
+        ? `${window.location.origin}/convite/${search.invite}`
+        : `${window.location.origin}/onboarding/familia`;
+
       const { error } = await supabase.auth.resend({
         type: "signup",
         email: submittedEmail,
         options: {
-          emailRedirectTo: `${window.location.origin}/onboarding/familia`,
+          emailRedirectTo: redirectBase,
         },
       });
       if (error) throw error;
@@ -128,7 +169,12 @@ function Registro() {
             {resending ? "Reenviando..." : "Reenviar e-mail"}
           </Button>
           <Button asChild className="h-[52px] w-full text-base">
-            <Link to="/auth/login">Já confirmei — Entrar</Link>
+            <Link
+              to="/auth/login"
+              search={search.invite ? { invite: search.invite } : {}}
+            >
+              Já confirmei — Entrar
+            </Link>
           </Button>
         </div>
       </main>
@@ -215,7 +261,11 @@ function Registro() {
 
         <p className="text-center text-sm text-muted-foreground">
           Já tem conta?{" "}
-          <Link to="/auth/login" className="font-medium text-primary">
+          <Link
+            to="/auth/login"
+            search={search.invite ? { invite: search.invite } : {}}
+            className="font-medium text-primary"
+          >
             Entrar
           </Link>
         </p>
