@@ -16,7 +16,10 @@ dist-ssr
 .nitro
 *.local
 
-# Wrangler / Cloudflare
+# Vercel
+.vercel/
+
+# Wrangler / Cloudflare (no longer used — project deploys to Vercel)
 .wrangler/
 .dev.vars
 

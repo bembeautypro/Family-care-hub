@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Copy, Share2, Link2, ShieldOff, AlertTriangle, Phone, Pill } from "lucide-react";
+import { Copy, Share2, Link2, ShieldOff, AlertTriangle, Phone, Pill, QrCode } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -81,6 +82,7 @@ function EmergenciaPage() {
   const [patientPreview, setPatientPreview] = useState<PatientPreview | null>(null);
   const [generating, setGenerating] = useState(false);
   const [deactivating, setDeactivating] = useState(false);
+  const [showQR, setShowQR] = useState(false);
 
   // Auth check
   useEffect(() => {
@@ -400,6 +402,18 @@ function EmergenciaPage() {
                     </Button>
                   </div>
 
+                  {/* QR code */}
+                  {showQR && (
+                    <div className="flex justify-center rounded-lg border bg-white p-4">
+                      <QRCodeSVG
+                        value={buildUrl(emergencyLink.token)}
+                        size={180}
+                        level="M"
+                        includeMargin={false}
+                      />
+                    </div>
+                  )}
+
                   {/* Ações */}
                   <div className="flex gap-2">
                     <Button
@@ -417,6 +431,14 @@ function EmergenciaPage() {
                     >
                       <Share2 className="mr-2 h-4 w-4" />
                       Compartilhar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="h-[44px] px-3"
+                      onClick={() => setShowQR((v) => !v)}
+                      aria-label="Mostrar QR Code"
+                    >
+                      <QrCode className="h-4 w-4" />
                     </Button>
                   </div>
 
