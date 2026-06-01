@@ -7,7 +7,7 @@ export type EventType =
   | "fall_accident"
   | "medication_change"
   | "diagnosis"
-  | "followup"
+  | "return"
   | "crisis"
   | "vaccine"
   | "family_note";
@@ -23,7 +23,7 @@ export const EVENT_TYPES: { value: EventType; label: string; icon: string }[] = 
   { value: "fall_accident", label: "Queda ou acidente", icon: "🤸" },
   { value: "medication_change", label: "Alteração de medicamento", icon: "💊" },
   { value: "diagnosis", label: "Diagnóstico", icon: "📋" },
-  { value: "followup", label: "Retorno médico", icon: "🔁" },
+  { value: "return", label: "Retorno médico", icon: "🔁" },
   { value: "crisis", label: "Crise", icon: "⚡" },
   { value: "vaccine", label: "Vacina", icon: "💉" },
   { value: "family_note", label: "Observação familiar", icon: "📝" },

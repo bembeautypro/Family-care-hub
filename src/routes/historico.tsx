@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, useCallback } from "react";
-import { MoreVertical, Pencil, Archive } from "lucide-react";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { MoreVertical, Pencil, Archive, Search } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -62,6 +62,9 @@ function HistoricoPage() {
   const { patients, active, activeId, setActiveId, loading: patientsLoading } = usePatients();
   const [typeFilter, setTypeFilter] = useState<EventType | "all">("all");
   const [severityFilter, setSeverityFilter] = useState<Severity | "all">("all");
+  const [searchInput, setSearchInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [events, setEvents] = useState<ClinicalEvent[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -88,6 +91,9 @@ function HistoricoPage() {
       .order("created_at", { ascending: false });
     if (typeFilter !== "all") q = q.eq("type", typeFilter);
     if (severityFilter !== "all") q = q.eq("severity", severityFilter);
+    if (searchQuery.trim()) {
+      q = q.or(`title.ilike.%${searchQuery.trim()}%,description.ilike.%${searchQuery.trim()}%`);
+    }
 
     const { data, error } = await q;
     if (error) {
@@ -111,11 +117,17 @@ function HistoricoPage() {
     }
     setEvents(list);
     setLoading(false);
-  }, [active, typeFilter, severityFilter]);
+  }, [active, typeFilter, severityFilter, searchQuery]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  function handleSearchChange(value: string) {
+    setSearchInput(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setSearchQuery(value), 300);
+  }
 
   async function archive(ev: ClinicalEvent) {
     const { error } = await supabase
@@ -141,6 +153,18 @@ function HistoricoPage() {
 
       <main className="px-5 pt-4">
         <h1 className="text-2xl font-bold">Histórico clínico</h1>
+
+        {/* Search bar */}
+        <div className="relative mt-4">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="search"
+            placeholder="Buscar eventos…"
+            value={searchInput}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="h-10 w-full rounded-xl border bg-card pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-ring"
+          />
+        </div>
 
         {/* Type filter */}
         <div className="-mx-5 mt-4 flex gap-2 overflow-x-auto px-5 pb-1">

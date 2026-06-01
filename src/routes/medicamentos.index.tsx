@@ -230,6 +230,13 @@ function MedicamentosList() {
         </AlertDialogContent>
       </AlertDialog>
 
+      <footer className="px-5 pb-4 pt-2 text-center">
+        <p className="text-xs text-muted-foreground">
+          O Amparo organiza informações e oferece apoio contextual. Ele não substitui médicos,
+          farmacêuticos, serviços de emergência ou orientação profissional de saúde.
+        </p>
+      </footer>
+
       <BottomNav />
     </div>
   );
