@@ -164,10 +164,12 @@ export type Database = {
           deleted_at: string | null
           deleted_by: string | null
           description: string | null
+          doctor_name: string | null
           event_date: string
           id: string
           patient_id: string | null
           severity: string | null
+          tags: string[] | null
           title: string
           type: string
           updated_at: string | null
@@ -179,10 +181,12 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           description?: string | null
+          doctor_name?: string | null
           event_date: string
           id?: string
           patient_id?: string | null
           severity?: string | null
+          tags?: string[] | null
           title: string
           type: string
           updated_at?: string | null
@@ -194,10 +198,12 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           description?: string | null
+          doctor_name?: string | null
           event_date?: string
           id?: string
           patient_id?: string | null
           severity?: string | null
+          tags?: string[] | null
           title?: string
           type?: string
           updated_at?: string | null
