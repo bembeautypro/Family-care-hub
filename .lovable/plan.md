@@ -1,61 +1,89 @@
-## Correções da auditoria dos Prompts 1 e 2
+# Módulo de Histórico Clínico
 
-### 1. Server function para criar família + admin (BUG 1 — crítico)
+## 1. Migração de schema (clinical_events)
 
-**Problema:** A política `admins can manage family_members` exige que o usuário já seja admin para inserir — bloqueia o INSERT do próprio admin no Passo 3.
+A tabela hoje tem `type`, `title`, `description`, `severity`, `event_date`, `created_by`, `appointment_id` e soft delete — mas faltam campos do prompt e os valores atuais (`consultation`, `exam`, `low`/`medium`/`high`) não cobrem as 12 categorias nem a gravidade "Crítica".
 
-**Solução:** Criar `src/lib/onboarding.functions.ts` com `createFamilyWithAdmin` usando `requireSupabaseAuth` + `supabaseAdmin`:
+Mudanças:
+- `ALTER TABLE clinical_events ADD COLUMN tags text[]`
+- `ALTER TABLE clinical_events ADD COLUMN doctor_name text`
+- CHECK constraint em `type` com os 12 valores: `consultation`, `exam`, `hospitalization`, `surgery`, `symptom`, `fall_accident`, `medication_change`, `diagnosis`, `followup`, `crisis`, `vaccine`, `family_note`
+- CHECK constraint em `severity` com `low | medium | high | critical`
+- Índice em `(patient_id, event_date DESC) WHERE deleted_at IS NULL` para ordenar a timeline rápido
+- Índice GIN em `tags`
 
-- Validação Zod do nome da família e papel
-- Em uma única chamada, usando `supabaseAdmin` (bypassa RLS):
-  1. INSERT em `families` com `created_by = userId`
-  2. INSERT em `family_members` com `role='admin'`, `status='active'`
-  3. UPDATE `profiles.onboarding_step = 1`
-- Retorna `{ familyId }`
+CHECK é seguro aqui (lista imutável de enums) — não viola a regra "use trigger em vez de CHECK" que vale para validações temporais.
 
-**Atualizar `src/routes/onboarding/familia.tsx`:**
-- Substituir os 3 `supabase.from(...)` por uma única chamada `useServerFn(createFamilyWithAdmin)`
-- Manter o `sessionStorage` do `family_id` para o próximo passo
+## 2. Helper compartilhado — `src/lib/historico.ts`
 
-### 2. Mapear severidade de alergias (BUG 2 — crítico)
+- Tipo `EventType` + array `EVENT_TYPES` com `{ value, label pt-BR, icon emoji }` (12 itens)
+- Tipo `Severity` + array `SEVERITIES` com `{ value, label, dotColor, borderColor }` mapeando para tokens semânticos do design system (cinza/azul/laranja/vermelho — adicionar tokens em `src/styles.css` se faltarem)
+- Helper `formatEventDate(date)` em pt-BR (dia + mês abreviado + ano)
 
-**Problema:** UI envia `'leve'|'moderada'|'grave'`, DB exige `'low'|'medium'|'high'|'critical'`.
+## 3. Timeline — `src/routes/historico.tsx` (reescrita)
 
-**Solução:** Em `src/routes/onboarding/emergencia.tsx`, ao inserir em `patient_allergies` mapear:
-- `leve → low`, `moderada → medium`, `grave → high`
-- Manter os rótulos e cores na UI inalterados
+Layout:
+- `AppHeader` + `PatientSelector` + `BottomNav` + `Fab` (padrão dashboard)
+- Título "Histórico clínico"
+- **Filtro 1** (tipo): chips horizontais com `overflow-x-auto`, primeiro chip "Todos", depois os 12 tipos
+- **Filtro 2** (gravidade): chips "Todos | Baixa | Média | Alta | Crítica"
+- Lista de cards ordenada por `event_date DESC`
+- Estado vazio com CTA "Adicionar primeiro evento"
+- Skeleton durante load (3 cards fake)
 
-### 3. Voltar para confirmação de e-mail obrigatória (divergência 3)
+Card:
+- `border-l-4` com cor da gravidade
+- Data formatada em pt-BR no topo
+- Ícone (emoji) + título em negrito
+- Descrição truncada em 2 linhas (`line-clamp-2`); clique no card alterna `line-clamp-none`
+- Badge de gravidade
+- Nome do registrador (lookup em `profiles` via `created_by`)
+- Botão ⋮ → `Sheet` (bottom sheet) com Editar / Arquivar
 
-**Mudanças:**
-- Chamar `configure_auth` com `auto_confirm_email: false`
-- Em `src/routes/auth/registro.tsx`: após `signUp` bem-sucedido, **não** redirecionar para `/onboarding/familia`. Em vez disso, mostrar tela "Verifique seu e-mail" inline (mesmo arquivo, com estado `submitted`), com:
-  - Ícone de envelope
-  - "Enviamos um link para {email}"
-  - Instrução para abrir o e-mail e clicar no link
-  - Botão secundário "Reenviar e-mail" (chama `supabase.auth.resend`)
-- O `emailRedirectTo: ${origin}/onboarding/familia` já estava configurado — após o usuário clicar no link, o Supabase autentica e redireciona para o Passo 3 com sessão ativa
-- Em `src/routes/onboarding/familia.tsx`: se chegar sem sessão, redirecionar para `/auth/login` (já implementado)
+Filtragem **server-side**: a query é refeita a cada mudança de filtro com `.eq('type', ...)` e `.eq('severity', ...)`, mais `.eq('patient_id', active.id)` e `.is('deleted_at', null)`.
 
-Não vou criar templates customizados de e-mail (não foi pedido) — Supabase usa os defaults.
+Arquivar = `UPDATE clinical_events SET deleted_at = now(), deleted_by = auth.uid()` (soft delete) com confirmação via `AlertDialog`.
 
-### 4. Hierarquia do "Preencher depois" (minor)
+## 4. Form — `src/routes/eventos.novo.tsx` (expansão) + `src/routes/eventos.$id.editar.tsx` (novo)
 
-Em `src/routes/onboarding/emergencia.tsx`:
-- Trocar `variant="ghost" size="sm"` por `variant="outline"` com `h-[44px]`, texto do mesmo peso visual do CTA principal
-- Mover para uma linha separada abaixo do `OnboardingProgress`, alinhado à direita, sem reduzir tamanho
+Extrair a lógica para `src/components/eventos/ClinicalEventForm.tsx` (compartilhado novo/editar):
+- Select de **tipo** com os 12 valores (emoji + label)
+- Date picker (shadcn `Calendar` em `Popover`, `pointer-events-auto`)
+- Input título (obrigatório)
+- Textarea descrição
+- Radio group de gravidade com 4 opções (incluindo Crítica)
+- Input de tags (string separada por vírgula → `text[]`); chips removíveis embaixo
+- Input médico relacionado (`doctor_name`)
+- Mantém compatibilidade com `?appointment=<id>` (carrega evento já existente para editar orientações)
 
-### 5. Não mexer
+Rota `/eventos/$id/editar` carrega por `id`, popula o form, faz UPDATE.
 
-- Estrutura de pastas (`src/routes/` em vez de `src/pages/`) — adaptação já confirmada
-- `relationship` armazenado em `patient.notes` — spec não inclui coluna; manter
-- `blood_type = "Não sei"` descartado em vez de salvar `'unknown'` — comportamento aceitável
-- `photo_url` em `patients` armazenando file_path — segue a regra "file_path no banco"
-- Bucket privado + políticas de storage — já corretas
+## 5. Bottom nav + dashboard
 
-### Resultado esperado
+- O `BottomNav` continua com 5 itens; "Histórico" não entra na nav (é acessado via dashboard "Ver histórico completo →" que já aponta para `/historico`)
+- Sem mudanças no dashboard
 
-- Passo 3 funciona end-to-end (família + admin criados atomicamente via service_role)
-- Passo 5 aceita alergias sem violar check constraint
-- Cadastro exige confirmação de e-mail antes de entrar no Passo 3
-- "Preencher depois" tem peso visual equivalente ao CTA primário
+## Aspectos técnicos
+
+- Todas queries: `WHERE deleted_at IS NULL`, `WHERE patient_id = active.id`, ordenadas por `event_date DESC, created_at DESC`
+- Filtros aplicados no servidor (refetch ao mudar chip), nada filtrado no client
+- Soft delete via UPDATE (RLS já cobre via `editors can update clinical_events`)
+- Sem swipe — ações sempre via botão ⋮ + bottom sheet
+- Tokens de cor (severity) definidos em `src/styles.css` para não usar classes hex inline
+- FAB em `bottom: 72px` (já garantido pelo `Fab` compartilhado)
+- Auth gate via `supabase.auth.getUser()` no componente, redireciona para `/auth/login` se sem sessão
+
+## Arquivos
+
+**Criar:**
+- `src/lib/historico.ts`
+- `src/components/eventos/ClinicalEventForm.tsx`
+- `src/routes/eventos.$id.editar.tsx`
+
+**Editar:**
+- `src/routes/historico.tsx` (reescrita completa)
+- `src/routes/eventos.novo.tsx` (passa a usar `ClinicalEventForm`)
+- `src/styles.css` (tokens de severidade, se faltarem)
+- `src/routeTree.gen.ts` (registro da rota de editar)
+
+**Migration:** `add tags + doctor_name + CHECK constraints + índices em clinical_events`
