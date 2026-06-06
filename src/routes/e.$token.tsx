@@ -441,7 +441,7 @@ function PublicEmergencyPage() {
               </h2>
             </div>
             <ul className="space-y-3">
-              {contacts.map((c, i) => (
+              {contacts.filter((c) => !!c.phone).map((c, i) => (
                 <li
                   key={`${c.name}-${i}`}
                   className="flex items-center justify-between gap-3"
@@ -456,7 +456,7 @@ function PublicEmergencyPage() {
                     <p className="text-base text-gray-700">{c.phone}</p>
                   </div>
                   <a
-                    href={`tel:${c.phone.replace(/\D/g, "")}`}
+                    href={`tel:${(c.phone ?? "").replace(/\D/g, "")}`}
                     className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-green-600 px-4 py-2 text-base font-semibold text-white hover:bg-green-700 active:bg-green-800"
                   >
                     <Phone className="h-4 w-4" />
