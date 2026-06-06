@@ -21,9 +21,11 @@ export const logEmergencyAccess = createServerFn({ method: "POST" })
       .eq("token", token)
       .single();
 
-    if (linkErr || !link) {
+    if (linkErr || !link || !link.patient_id) {
       throw new Error("LINK_INVALID");
     }
+    const patientId = link.patient_id;
+
 
     // 2. Valida is_active e expiração
     const isExpired =
@@ -63,35 +65,35 @@ export const logEmergencyAccess = createServerFn({ method: "POST" })
         .select(
           "id, name, photo_url, birth_date, blood_type, health_insurance_name, health_insurance_number, preferred_hospital"
         )
-        .eq("id", link.patient_id)
+        .eq("id", patientId)
         .single(),
       supabaseAdmin
         .from("patient_allergies")
         .select("allergy, severity")
-        .eq("patient_id", link.patient_id)
+        .eq("patient_id", patientId)
         .is("deleted_at", null),
       supabaseAdmin
         .from("medications")
         .select("name, generic_name, dosage, frequency")
-        .eq("patient_id", link.patient_id)
+        .eq("patient_id", patientId)
         .eq("status", "active")
         .is("deleted_at", null),
       supabaseAdmin
         .from("patient_conditions")
         .select("name, status")
-        .eq("patient_id", link.patient_id)
+        .eq("patient_id", patientId)
         .eq("status", "active")
         .is("deleted_at", null),
       supabaseAdmin
         .from("emergency_contacts")
         .select("name, relationship, phone, priority")
-        .eq("patient_id", link.patient_id)
+        .eq("patient_id", patientId)
         .is("deleted_at", null)
         .order("priority", { ascending: true }),
       supabaseAdmin
         .from("documents")
         .select("id, title, type, file_path, document_date")
-        .eq("patient_id", link.patient_id)
+        .eq("patient_id", patientId)
         .is("deleted_at", null)
         .order("created_at", { ascending: false })
         .limit(5),

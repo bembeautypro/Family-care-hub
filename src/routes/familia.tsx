@@ -204,7 +204,7 @@ function FamiliaPage() {
       if (membersErr) {
         toast.error(membersErr.message);
       } else {
-        setMembers((membersData ?? []) as Member[]);
+        setMembers((membersData ?? []) as unknown as Member[]);
       }
 
       // Load pending invitations (admin only)
