@@ -215,7 +215,7 @@ function NovoDocumento() {
       }
 
       toast.success("Documento salvo com sucesso.");
-      navigate({ to: "/documentos/" });
+      navigate({ to: "/documentos" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao salvar documento.");
     } finally {
@@ -234,7 +234,7 @@ function NovoDocumento() {
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link
-          to="/documentos/"
+          to="/documentos"
           className="inline-flex items-center gap-1 text-sm text-muted-foreground"
         >
           <ChevronLeft className="h-4 w-4" /> Voltar

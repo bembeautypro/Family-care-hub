@@ -42,7 +42,7 @@ type Condition = {
 type Contact = {
   name: string;
   relationship: string | null;
-  phone: string;
+  phone: string | null;
   priority: number | null;
 };
 
