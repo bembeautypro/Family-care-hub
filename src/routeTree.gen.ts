@@ -18,22 +18,22 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as MedicamentosIndexRouteImport } from './routes/medicamentos.index'
 import { Route as DocumentosIndexRouteImport } from './routes/documentos.index'
 import { Route as AgendaIndexRouteImport } from './routes/agenda.index'
+import { Route as PacienteIdRouteImport } from './routes/paciente.$id'
 import { Route as OnboardingPrimeiraAcaoRouteImport } from './routes/onboarding/primeira-acao'
 import { Route as OnboardingFamiliarRouteImport } from './routes/onboarding/familiar'
 import { Route as OnboardingFamiliaRouteImport } from './routes/onboarding/familia'
 import { Route as OnboardingEmergenciaRouteImport } from './routes/onboarding/emergencia'
 import { Route as MedicamentosNovoRouteImport } from './routes/medicamentos.novo'
 import { Route as EventosNovoRouteImport } from './routes/eventos.novo'
+import { Route as ETokenRouteImport } from './routes/e.$token'
 import { Route as DocumentosNovoRouteImport } from './routes/documentos.novo'
+import { Route as ConviteTokenRouteImport } from './routes/convite.$token'
 import { Route as AuthRegistroRouteImport } from './routes/auth/registro'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AgendaNovaRouteImport } from './routes/agenda.nova'
 import { Route as MedicamentosIdEditarRouteImport } from './routes/medicamentos.$id.editar'
 import { Route as EventosIdEditarRouteImport } from './routes/eventos.$id.editar'
 import { Route as AgendaIdEditarRouteImport } from './routes/agenda.$id.editar'
-import { Route as ConviteTokenRouteImport } from './routes/convite.$token'
-import { Route as ETokenRouteImport } from './routes/e.$token'
-import { Route as PacienteIdRouteImport } from './routes/paciente.$id'
 
 const PerfilRoute = PerfilRouteImport.update({
   id: '/perfil',
@@ -80,6 +80,11 @@ const AgendaIndexRoute = AgendaIndexRouteImport.update({
   path: '/agenda/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PacienteIdRoute = PacienteIdRouteImport.update({
+  id: '/paciente/$id',
+  path: '/paciente/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OnboardingPrimeiraAcaoRoute = OnboardingPrimeiraAcaoRouteImport.update({
   id: '/onboarding/primeira-acao',
   path: '/onboarding/primeira-acao',
@@ -110,9 +115,19 @@ const EventosNovoRoute = EventosNovoRouteImport.update({
   path: '/eventos/novo',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ETokenRoute = ETokenRouteImport.update({
+  id: '/e/$token',
+  path: '/e/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DocumentosNovoRoute = DocumentosNovoRouteImport.update({
   id: '/documentos/novo',
   path: '/documentos/novo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConviteTokenRoute = ConviteTokenRouteImport.update({
+  id: '/convite/$token',
+  path: '/convite/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRegistroRoute = AuthRegistroRouteImport.update({
@@ -145,21 +160,6 @@ const AgendaIdEditarRoute = AgendaIdEditarRouteImport.update({
   path: '/agenda/$id/editar',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ConviteTokenRoute = ConviteTokenRouteImport.update({
-  id: '/convite/$token',
-  path: '/convite/$token',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ETokenRoute = ETokenRouteImport.update({
-  id: '/e/$token',
-  path: '/e/$token',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PacienteIdRoute = PacienteIdRouteImport.update({
-  id: '/paciente/$id',
-  path: '/paciente/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -171,22 +171,22 @@ export interface FileRoutesByFullPath {
   '/agenda/nova': typeof AgendaNovaRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/registro': typeof AuthRegistroRoute
+  '/convite/$token': typeof ConviteTokenRoute
   '/documentos/novo': typeof DocumentosNovoRoute
+  '/e/$token': typeof ETokenRoute
   '/eventos/novo': typeof EventosNovoRoute
   '/medicamentos/novo': typeof MedicamentosNovoRoute
   '/onboarding/emergencia': typeof OnboardingEmergenciaRoute
   '/onboarding/familia': typeof OnboardingFamiliaRoute
   '/onboarding/familiar': typeof OnboardingFamiliarRoute
   '/onboarding/primeira-acao': typeof OnboardingPrimeiraAcaoRoute
+  '/paciente/$id': typeof PacienteIdRoute
   '/agenda/': typeof AgendaIndexRoute
   '/documentos/': typeof DocumentosIndexRoute
   '/medicamentos/': typeof MedicamentosIndexRoute
   '/agenda/$id/editar': typeof AgendaIdEditarRoute
   '/eventos/$id/editar': typeof EventosIdEditarRoute
   '/medicamentos/$id/editar': typeof MedicamentosIdEditarRoute
-  '/convite/$token': typeof ConviteTokenRoute
-  '/e/$token': typeof ETokenRoute
-  '/paciente/$id': typeof PacienteIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -198,22 +198,22 @@ export interface FileRoutesByTo {
   '/agenda/nova': typeof AgendaNovaRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/registro': typeof AuthRegistroRoute
+  '/convite/$token': typeof ConviteTokenRoute
   '/documentos/novo': typeof DocumentosNovoRoute
+  '/e/$token': typeof ETokenRoute
   '/eventos/novo': typeof EventosNovoRoute
   '/medicamentos/novo': typeof MedicamentosNovoRoute
   '/onboarding/emergencia': typeof OnboardingEmergenciaRoute
   '/onboarding/familia': typeof OnboardingFamiliaRoute
   '/onboarding/familiar': typeof OnboardingFamiliarRoute
   '/onboarding/primeira-acao': typeof OnboardingPrimeiraAcaoRoute
+  '/paciente/$id': typeof PacienteIdRoute
   '/agenda': typeof AgendaIndexRoute
   '/documentos': typeof DocumentosIndexRoute
   '/medicamentos': typeof MedicamentosIndexRoute
   '/agenda/$id/editar': typeof AgendaIdEditarRoute
   '/eventos/$id/editar': typeof EventosIdEditarRoute
   '/medicamentos/$id/editar': typeof MedicamentosIdEditarRoute
-  '/convite/$token': typeof ConviteTokenRoute
-  '/e/$token': typeof ETokenRoute
-  '/paciente/$id': typeof PacienteIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -226,22 +226,22 @@ export interface FileRoutesById {
   '/agenda/nova': typeof AgendaNovaRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/registro': typeof AuthRegistroRoute
+  '/convite/$token': typeof ConviteTokenRoute
   '/documentos/novo': typeof DocumentosNovoRoute
+  '/e/$token': typeof ETokenRoute
   '/eventos/novo': typeof EventosNovoRoute
   '/medicamentos/novo': typeof MedicamentosNovoRoute
   '/onboarding/emergencia': typeof OnboardingEmergenciaRoute
   '/onboarding/familia': typeof OnboardingFamiliaRoute
   '/onboarding/familiar': typeof OnboardingFamiliarRoute
   '/onboarding/primeira-acao': typeof OnboardingPrimeiraAcaoRoute
+  '/paciente/$id': typeof PacienteIdRoute
   '/agenda/': typeof AgendaIndexRoute
   '/documentos/': typeof DocumentosIndexRoute
   '/medicamentos/': typeof MedicamentosIndexRoute
   '/agenda/$id/editar': typeof AgendaIdEditarRoute
   '/eventos/$id/editar': typeof EventosIdEditarRoute
   '/medicamentos/$id/editar': typeof MedicamentosIdEditarRoute
-  '/convite/$token': typeof ConviteTokenRoute
-  '/e/$token': typeof ETokenRoute
-  '/paciente/$id': typeof PacienteIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -255,22 +255,22 @@ export interface FileRouteTypes {
     | '/agenda/nova'
     | '/auth/login'
     | '/auth/registro'
+    | '/convite/$token'
     | '/documentos/novo'
+    | '/e/$token'
     | '/eventos/novo'
     | '/medicamentos/novo'
     | '/onboarding/emergencia'
     | '/onboarding/familia'
     | '/onboarding/familiar'
     | '/onboarding/primeira-acao'
+    | '/paciente/$id'
     | '/agenda/'
     | '/documentos/'
     | '/medicamentos/'
     | '/agenda/$id/editar'
     | '/eventos/$id/editar'
     | '/medicamentos/$id/editar'
-    | '/convite/$token'
-    | '/e/$token'
-    | '/paciente/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -282,22 +282,22 @@ export interface FileRouteTypes {
     | '/agenda/nova'
     | '/auth/login'
     | '/auth/registro'
+    | '/convite/$token'
     | '/documentos/novo'
+    | '/e/$token'
     | '/eventos/novo'
     | '/medicamentos/novo'
     | '/onboarding/emergencia'
     | '/onboarding/familia'
     | '/onboarding/familiar'
     | '/onboarding/primeira-acao'
+    | '/paciente/$id'
     | '/agenda'
     | '/documentos'
     | '/medicamentos'
     | '/agenda/$id/editar'
     | '/eventos/$id/editar'
     | '/medicamentos/$id/editar'
-    | '/convite/$token'
-    | '/e/$token'
-    | '/paciente/$id'
   id:
     | '__root__'
     | '/'
@@ -309,22 +309,22 @@ export interface FileRouteTypes {
     | '/agenda/nova'
     | '/auth/login'
     | '/auth/registro'
+    | '/convite/$token'
     | '/documentos/novo'
+    | '/e/$token'
     | '/eventos/novo'
     | '/medicamentos/novo'
     | '/onboarding/emergencia'
     | '/onboarding/familia'
     | '/onboarding/familiar'
     | '/onboarding/primeira-acao'
+    | '/paciente/$id'
     | '/agenda/'
     | '/documentos/'
     | '/medicamentos/'
     | '/agenda/$id/editar'
     | '/eventos/$id/editar'
     | '/medicamentos/$id/editar'
-    | '/convite/$token'
-    | '/e/$token'
-    | '/paciente/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -337,22 +337,22 @@ export interface RootRouteChildren {
   AgendaNovaRoute: typeof AgendaNovaRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegistroRoute: typeof AuthRegistroRoute
+  ConviteTokenRoute: typeof ConviteTokenRoute
   DocumentosNovoRoute: typeof DocumentosNovoRoute
+  ETokenRoute: typeof ETokenRoute
   EventosNovoRoute: typeof EventosNovoRoute
   MedicamentosNovoRoute: typeof MedicamentosNovoRoute
   OnboardingEmergenciaRoute: typeof OnboardingEmergenciaRoute
   OnboardingFamiliaRoute: typeof OnboardingFamiliaRoute
   OnboardingFamiliarRoute: typeof OnboardingFamiliarRoute
   OnboardingPrimeiraAcaoRoute: typeof OnboardingPrimeiraAcaoRoute
+  PacienteIdRoute: typeof PacienteIdRoute
   AgendaIndexRoute: typeof AgendaIndexRoute
   DocumentosIndexRoute: typeof DocumentosIndexRoute
   MedicamentosIndexRoute: typeof MedicamentosIndexRoute
   AgendaIdEditarRoute: typeof AgendaIdEditarRoute
   EventosIdEditarRoute: typeof EventosIdEditarRoute
   MedicamentosIdEditarRoute: typeof MedicamentosIdEditarRoute
-  ConviteTokenRoute: typeof ConviteTokenRoute
-  ETokenRoute: typeof ETokenRoute
-  PacienteIdRoute: typeof PacienteIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -420,6 +420,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgendaIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/paciente/$id': {
+      id: '/paciente/$id'
+      path: '/paciente/$id'
+      fullPath: '/paciente/$id'
+      preLoaderRoute: typeof PacienteIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/onboarding/primeira-acao': {
       id: '/onboarding/primeira-acao'
       path: '/onboarding/primeira-acao'
@@ -462,11 +469,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventosNovoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/e/$token': {
+      id: '/e/$token'
+      path: '/e/$token'
+      fullPath: '/e/$token'
+      preLoaderRoute: typeof ETokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/documentos/novo': {
       id: '/documentos/novo'
       path: '/documentos/novo'
       fullPath: '/documentos/novo'
       preLoaderRoute: typeof DocumentosNovoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/convite/$token': {
+      id: '/convite/$token'
+      path: '/convite/$token'
+      fullPath: '/convite/$token'
+      preLoaderRoute: typeof ConviteTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/registro': {
@@ -511,27 +532,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgendaIdEditarRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/convite/$token': {
-      id: '/convite/$token'
-      path: '/convite/$token'
-      fullPath: '/convite/$token'
-      preLoaderRoute: typeof ConviteTokenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/e/$token': {
-      id: '/e/$token'
-      path: '/e/$token'
-      fullPath: '/e/$token'
-      preLoaderRoute: typeof ETokenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/paciente/$id': {
-      id: '/paciente/$id'
-      path: '/paciente/$id'
-      fullPath: '/paciente/$id'
-      preLoaderRoute: typeof PacienteIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -545,23 +545,33 @@ const rootRouteChildren: RootRouteChildren = {
   AgendaNovaRoute: AgendaNovaRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegistroRoute: AuthRegistroRoute,
+  ConviteTokenRoute: ConviteTokenRoute,
   DocumentosNovoRoute: DocumentosNovoRoute,
+  ETokenRoute: ETokenRoute,
   EventosNovoRoute: EventosNovoRoute,
   MedicamentosNovoRoute: MedicamentosNovoRoute,
   OnboardingEmergenciaRoute: OnboardingEmergenciaRoute,
   OnboardingFamiliaRoute: OnboardingFamiliaRoute,
   OnboardingFamiliarRoute: OnboardingFamiliarRoute,
   OnboardingPrimeiraAcaoRoute: OnboardingPrimeiraAcaoRoute,
+  PacienteIdRoute: PacienteIdRoute,
   AgendaIndexRoute: AgendaIndexRoute,
   DocumentosIndexRoute: DocumentosIndexRoute,
   MedicamentosIndexRoute: MedicamentosIndexRoute,
   AgendaIdEditarRoute: AgendaIdEditarRoute,
   EventosIdEditarRoute: EventosIdEditarRoute,
   MedicamentosIdEditarRoute: MedicamentosIdEditarRoute,
-  ConviteTokenRoute: ConviteTokenRoute,
-  ETokenRoute: ETokenRoute,
-  PacienteIdRoute: PacienteIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
