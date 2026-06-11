@@ -10,6 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
   return (
@@ -37,7 +38,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
-    console.error("[Amparo] Root error boundary:", error);
+    reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
   return (
@@ -76,23 +77,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Amparo — Saúde da família em um só lugar" },
-      { name: "description", content: "Organize remédios, exames, consultas e informações de emergência de quem você cuida." },
-      { name: "theme-color", content: "#fffaf2" },
-      { name: "apple-mobile-web-app-capable", content: "yes" },
-      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
-      { property: "og:title", content: "Amparo — Saúde da família em um só lugar" },
-      { property: "og:description", content: "Organize remédios, exames, consultas e informações de emergência de quem você cuida." },
+      { title: "Lovable App" },
+      { name: "description", content: "Family Care Hub is a secure platform for managing family health information and care coordination." },
+      { name: "author", content: "Lovable" },
+      { property: "og:title", content: "Lovable App" },
+      { property: "og:description", content: "Family Care Hub is a secure platform for managing family health information and care coordination." },
       { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Lovable App" },
+      { name: "twitter:description", content: "Family Care Hub is a secure platform for managing family health information and care coordination." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/6e909324-562e-4413-a1ee-fb7d6ea8ee48/id-preview-a1df7798--96384b44-2188-41a8-a4ef-52285ce6432a.lovable.app-1780344083114.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/6e909324-562e-4413-a1ee-fb7d6ea8ee48/id-preview-a1df7798--96384b44-2188-41a8-a4ef-52285ce6432a.lovable.app-1780344083114.png" },
     ],
     links: [
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap",
+        href: appCss,
       },
-      { rel: "stylesheet", href: appCss },
     ],
   }),
   shellComponent: RootShell,
@@ -103,7 +105,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR">
+    <html lang="en">
       <head>
         <HeadContent />
       </head>
