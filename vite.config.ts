@@ -8,7 +8,7 @@ import viteReact from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [
     tanstackStart(),
-    nitro({ preset: "vercel" }),
+    nitro({ preset: "cloudflare_module", output: { dir: "./dist" } }),
     tailwindcss(),
     tsConfigPaths(),
     viteReact(),
