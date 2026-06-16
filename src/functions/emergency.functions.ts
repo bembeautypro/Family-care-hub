@@ -9,10 +9,45 @@ const logEmergencyAccessSchema = z.object({
   user_agent: z.string(),
 });
 
+// P0-L1 hardening
+const RATE_LIMIT_WINDOW_SECONDS = 60;
+const RATE_LIMIT_MAX_HITS = 10;
+const ACCESS_COUNT_HARD_CAP = 1000;
+const SIGNED_URL_TTL_SECONDS = 300; // P0-03 (M2): was 3600
+
 export const logEmergencyAccess = createServerFn({ method: "POST" })
   .inputValidator((input) => logEmergencyAccessSchema.parse(input))
   .handler(async ({ data }) => {
     const { token, ip_address, user_agent } = data;
+
+    // 0. Rate-limit per IP (P0-02 / M1)
+    const windowStart = new Date(
+      Math.floor(Date.now() / (RATE_LIMIT_WINDOW_SECONDS * 1000)) *
+        RATE_LIMIT_WINDOW_SECONDS *
+        1000,
+    ).toISOString();
+
+    const { data: rl } = await supabaseAdmin
+      .from("emergency_rate_limits")
+      .select("hits")
+      .eq("ip_address", ip_address)
+      .eq("window_start", windowStart)
+      .maybeSingle();
+
+    if (rl && (rl.hits ?? 0) >= RATE_LIMIT_MAX_HITS) {
+      throw new Error("RATE_LIMITED");
+    }
+
+    await supabaseAdmin
+      .from("emergency_rate_limits")
+      .upsert(
+        {
+          ip_address,
+          window_start: windowStart,
+          hits: (rl?.hits ?? 0) + 1,
+        },
+        { onConflict: "ip_address,window_start" },
+      );
 
     // 1. Busca emergency_link pelo token
     const { data: link, error: linkErr } = await supabaseAdmin
@@ -26,15 +61,15 @@ export const logEmergencyAccess = createServerFn({ method: "POST" })
     }
     const patientId = link.patient_id;
 
-
-    // 2. Valida is_active e expiração
+    // 2. Valida is_active, expiração e cap de uso (P0-02)
     const isExpired =
       link.expires_at !== null && new Date(link.expires_at) <= new Date();
-    if (!link.is_active || isExpired) {
+    const isOverCap = (link.access_count ?? 0) >= ACCESS_COUNT_HARD_CAP;
+    if (!link.is_active || isExpired || isOverCap) {
       throw new Error("LINK_INVALID");
     }
 
-    // 3. INSERT em access_logs
+    // 3. INSERT em access_logs (trigger preenche snapshots)
     await supabaseAdmin.from("access_logs").insert({
       emergency_link_id: link.id,
       patient_id: link.patient_id,
@@ -104,7 +139,7 @@ export const logEmergencyAccess = createServerFn({ method: "POST" })
       throw new Error("LINK_INVALID");
     }
 
-    // 6. Gera signed URLs para documentos
+    // 6. Gera signed URLs (TTL curto — P0-03)
     const documents = documentsRes.data ?? [];
     const documentUrls: { title: string; type: string; signed_url: string }[] =
       [];
@@ -112,7 +147,7 @@ export const logEmergencyAccess = createServerFn({ method: "POST" })
       if (!doc.file_path) continue;
       const { data: signedData } = await supabaseAdmin.storage
         .from("medical-documents")
-        .createSignedUrl(doc.file_path, 3600);
+        .createSignedUrl(doc.file_path, SIGNED_URL_TTL_SECONDS);
       if (signedData?.signedUrl) {
         documentUrls.push({
           title: doc.title,
@@ -129,5 +164,6 @@ export const logEmergencyAccess = createServerFn({ method: "POST" })
       conditions: conditionsRes.data ?? [],
       contacts: contactsRes.data ?? [],
       document_urls: documentUrls,
+      signed_url_ttl_seconds: SIGNED_URL_TTL_SECONDS,
     };
   });
