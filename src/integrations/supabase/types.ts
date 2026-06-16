@@ -20,9 +20,11 @@ export type Database = {
           created_at: string | null
           emergency_link_id: string | null
           family_id: string | null
+          family_id_snapshot: string | null
           id: string
           ip_address: string | null
           patient_id: string | null
+          patient_id_snapshot: string | null
           resource_id: string | null
           resource_type: string | null
           user_agent: string | null
@@ -33,9 +35,11 @@ export type Database = {
           created_at?: string | null
           emergency_link_id?: string | null
           family_id?: string | null
+          family_id_snapshot?: string | null
           id?: string
           ip_address?: string | null
           patient_id?: string | null
+          patient_id_snapshot?: string | null
           resource_id?: string | null
           resource_type?: string | null
           user_agent?: string | null
@@ -46,9 +50,11 @@ export type Database = {
           created_at?: string | null
           emergency_link_id?: string | null
           family_id?: string | null
+          family_id_snapshot?: string | null
           id?: string
           ip_address?: string | null
           patient_id?: string | null
+          patient_id_snapshot?: string | null
           resource_id?: string | null
           resource_type?: string | null
           user_agent?: string | null
@@ -399,6 +405,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      emergency_rate_limits: {
+        Row: {
+          hits: number
+          ip_address: string
+          window_start: string
+        }
+        Insert: {
+          hits?: number
+          ip_address: string
+          window_start: string
+        }
+        Update: {
+          hits?: number
+          ip_address?: string
+          window_start?: string
+        }
+        Relationships: []
       }
       families: {
         Row: {
