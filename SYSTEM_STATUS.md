@@ -2,16 +2,18 @@
 
 ## Estado Atual
 
-- Build: ✅ `bun run build` passa em ~8s. `dist/server/index.mjs` (Worker entry) + `dist/public/` gerados pelo preset `cloudflare_module`. `wrangler.json` emitido.
-- Banco: 15 tabelas (+`emergency_rate_limits`), RLS habilitada em todas, GRANTs corretos.
-- Rotas: 17 rotas protegidas movidas para `src/routes/_authenticated/` (folder convention) com gate único `route.tsx` (`ssr: false`, `beforeLoad` → `supabase.auth.getUser()` → `redirect /auth/login`). Públicas mantidas no topo: `/`, `/auth/login`, `/auth/registro`, `/e/$token`, `/convite/$token`.
-- Server functions: `logEmergencyAccess` com rate-limit (10 hits/IP/60s), cap (1000), signed URLs TTL 300s.
-- `access_logs`: snapshots `family_id_snapshot`/`patient_id_snapshot`; trilha forense preservada após delete.
-- Não implementado: PWA/SW, Realtime, visualizador `react-pdf`, cron de purga LGPD.
+- Build: ✅ `bun run build` passa em ~8s (Cloudflare Worker preset).
+- Banco: 15 tabelas, RLS habilitada em todas, GRANTs corretos.
+- Rotas privadas centralizadas em `src/routes/_authenticated/` (gate único `route.tsx`, `ssr: false`).
+- Server functions: `logEmergencyAccess` com rate-limit (10/IP/60s), cap 1000, signed URLs TTL 300s.
+- `access_logs` com snapshots forenses (`family_id_snapshot`, `patient_id_snapshot`).
+- Dashboard: fetch protegido contra race condition ao trocar paciente.
+- Enums `appointments.type` alinhados front↔DB (`therapy`, `vaccine`).
+- Soft delete em documentos com `deleted_by` preenchido.
 
-## Nota de Prontidão: **7.5/10**
+## Nota de Prontidão: **8/10**
 
-(P0-L1 + P1-L1 fechados. Gate de auth centralizado, deploy preset Cloudflare validado em build local. Falta validar em deploy real.)
+(P0-L1 + P1-L1 + P1-L2 fechados. Falta validar deploy real e refinar Quick Wins de P2.)
 
 ## Riscos Abertos
 
@@ -19,13 +21,11 @@
 Nenhum.
 
 ### ALTO
-- **A4** — Race condition em `_authenticated/dashboard.tsx:150-200` ao trocar paciente.
+Nenhum (A4 fechado).
 
 ### MÉDIO
-- **M3** — Enums `APPOINTMENT_TYPES` no front divergem do CHECK do banco.
-- **M4** — `_authenticated/documentos.index.tsx:159-163` faz soft-delete sem `deleted_by`.
 - **M5** — Índices compostos `(patient_id, deleted_at)` faltam fora de `clinical_events`.
-- **M6** — `PatientDashboard` com 6 `useState` independentes; refator para React Query pendente.
+- **M6** — `PatientDashboard` com 6 `useState`; refator para React Query pendente (P2/P4).
 
 ### BAIXO
 - **B1** — Classes Tailwind hard-coded em `agenda.ts`.
@@ -33,18 +33,18 @@ Nenhum.
 - **B3** — `as string` em `familia.functions.ts`.
 - **B4** — `search_vector` tipado como `unknown`.
 
-### Dívida residual (não bloqueia, mas merece limpeza)
-- Rotas filhas ainda contêm `supabase.auth.getUser()` em `useEffect` para carregar perfil/checar onboarding. O redirect-para-login virou redundante (gate do `_authenticated` já barrou). Não removido neste lote porque o mesmo `useEffect` também faz fetch de profile/onboarding-step — exigiria refactor para `useQuery` (escopo P2-L2/M6).
+### Dívida residual
+- `useEffect` redundante de `supabase.auth.getUser()` em rotas filhas (cleanup em P2-L2/M6).
 
-### Fechados neste lote (P1-L1)
-- ✅ **A2** — 17 rotas privadas centralizadas em `src/routes/_authenticated/`; gate único em `_authenticated/route.tsx`. Verificar visualmente fluxos **F01/F02/F12**: deslogado em `/dashboard` → redirect para `/auth/login?redirect=...`.
-- ✅ **A3** — Preset Cloudflare validado: `bun run build` produz `dist/server/index.mjs` + `dist/public/` + `wrangler.json`. `vercel.json` removido. Aguarda validação em deploy real (publish).
+### Fechados neste lote (P1-L2)
+- ✅ **A4** — `PatientDashboard` (`_authenticated/dashboard.tsx`) agora usa flag `cancelled` no efeito de fetch, com reset de estado ao trocar paciente. Sem sobrescrita de dados de paciente anterior.
+- ✅ **M3** — `src/lib/agenda.ts` enums realinhados: `physiotherapy`→`therapy`, `vaccination`→`vaccine` (compatível com CHECK do banco).
+- ✅ **M4** — Confirmado: `_authenticated/documentos.index.tsx:156-173` já grava `deleted_by` no soft delete (auditoria preservada).
 
 ### Itens não verificáveis sem operador
 - Cron pg_cron de purga de `access_logs` (>90d) — pendente em P3-L1.
-- Métricas runtime, deploy real em Cloudflare Workers.
+- Deploy real em Cloudflare Workers.
 
 ## Última Atualização
 
-2026-06-17 — Etapa: **P1-L1 concluído** (A2, A3). Próximo lote recomendado: **P1-L2** (A4 race condition no dashboard; M3 enums; M4 `deleted_by`).
-
+2026-06-17 — Etapa: **P1-L2 concluído** (A4, M3, M4). Próximo lote recomendado: **P2-L1** (M5 índices, B1 tokens, B2 og:image).
