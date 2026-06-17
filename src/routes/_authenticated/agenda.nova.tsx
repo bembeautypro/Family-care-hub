@@ -12,7 +12,7 @@ const searchSchema = z.object({
   parent: z.string().uuid().optional(),
 });
 
-export const Route = createFileRoute("/_authenticated/_authenticated/agenda/nova")({
+export const Route = createFileRoute("/_authenticated/agenda/nova")({
   head: () => ({ meta: [{ title: "Novo compromisso — Amparo" }] }),
   validateSearch: searchSchema,
   component: NovoCompromisso,

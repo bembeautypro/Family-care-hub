@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export const Route = createFileRoute("/_authenticated/_authenticated/documentos/novo")({
+export const Route = createFileRoute("/_authenticated/documentos/novo")({
   head: () => ({ meta: [{ title: "Novo documento — Amparo" }] }),
   component: NovoDocumento,
 });

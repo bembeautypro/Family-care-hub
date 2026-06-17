@@ -10,7 +10,7 @@ import {
 } from "@/components/medicamentos/MedicationForm";
 import type { FrequencyValue } from "@/lib/medicamentos";
 
-export const Route = createFileRoute("/_authenticated/_authenticated/medicamentos/$id/editar")({
+export const Route = createFileRoute("/_authenticated/medicamentos/$id/editar")({
   head: () => ({ meta: [{ title: "Editar medicamento — Amparo" }] }),
   component: EditarMedicamento,
 });

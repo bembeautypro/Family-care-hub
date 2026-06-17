@@ -30,7 +30,7 @@ import { PatientSelector } from "@/components/patients/PatientSelector";
 import { usePatients } from "@/hooks/useActivePatient";
 import { type MedStatus, nextTimeToday } from "@/lib/medicamentos";
 
-export const Route = createFileRoute("/_authenticated/_authenticated/medicamentos/")({
+export const Route = createFileRoute("/_authenticated/medicamentos/")({
   head: () => ({ meta: [{ title: "Medicamentos — Amparo" }] }),
   component: MedicamentosList,
 });
