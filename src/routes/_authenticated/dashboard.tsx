@@ -23,7 +23,7 @@ import { PatientSelector } from "@/components/patients/PatientSelector";
 import { usePatients, ageFromBirthDate, type Patient } from "@/hooks/useActivePatient";
 import { onboardingRouteForStep } from "@/lib/onboarding/redirect";
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Início — Amparo" }] }),
   component: Dashboard,
 });
