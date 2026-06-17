@@ -51,7 +51,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-export const Route = createFileRoute("/paciente/$id")({
+export const Route = createFileRoute("/_authenticated/paciente/$id")({
   head: () => ({ meta: [{ title: "Paciente — Amparo" }] }),
   component: PacientePage,
 });

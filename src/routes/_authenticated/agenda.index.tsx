@@ -31,7 +31,7 @@ import { PatientSelector } from "@/components/patients/PatientSelector";
 import { usePatients } from "@/hooks/useActivePatient";
 import { formatDateTime, statusMeta, typeMeta } from "@/lib/agenda";
 
-export const Route = createFileRoute("/agenda/")({
+export const Route = createFileRoute("/_authenticated/_authenticated/agenda/")({
   head: () => ({ meta: [{ title: "Agenda — Amparo" }] }),
   component: AgendaList,
 });

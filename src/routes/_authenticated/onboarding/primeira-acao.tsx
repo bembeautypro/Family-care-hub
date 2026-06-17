@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Pill, FileText, Calendar, Siren } from "lucide-react";
 
-export const Route = createFileRoute("/onboarding/primeira-acao")({
+export const Route = createFileRoute("/_authenticated/onboarding/primeira-acao")({
   head: () => ({ meta: [{ title: "Primeira ação — Amparo" }] }),
   component: PrimeiraAcao,
 });

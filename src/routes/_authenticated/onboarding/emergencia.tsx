@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { OnboardingProgress } from "@/components/onboarding/ProgressBar";
 
-export const Route = createFileRoute("/onboarding/emergencia")({
+export const Route = createFileRoute("/_authenticated/onboarding/emergencia")({
   head: () => ({ meta: [{ title: "Dados de emergência — Amparo" }] }),
   component: Emergencia,
 });

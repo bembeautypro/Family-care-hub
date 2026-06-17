@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { OnboardingProgress } from "@/components/onboarding/ProgressBar";
 import { createFamilyWithAdmin } from "@/lib/onboarding.functions";
 
-export const Route = createFileRoute("/onboarding/familia")({
+export const Route = createFileRoute("/_authenticated/onboarding/familia")({
   head: () => ({ meta: [{ title: "Criar família — Amparo" }] }),
   component: Familia,
 });

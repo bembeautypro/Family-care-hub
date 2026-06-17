@@ -24,7 +24,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-export const Route = createFileRoute("/emergencia")({
+export const Route = createFileRoute("/_authenticated/_authenticated/emergencia")({
   head: () => ({ meta: [{ title: "Central de Emergência — Amparo" }] }),
   component: EmergenciaPage,
 });
