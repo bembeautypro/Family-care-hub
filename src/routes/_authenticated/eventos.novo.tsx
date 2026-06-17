@@ -14,7 +14,7 @@ const searchSchema = z.object({
   appointment: z.string().uuid().optional(),
 });
 
-export const Route = createFileRoute("/eventos/novo")({
+export const Route = createFileRoute("/_authenticated/eventos/novo")({
   head: () => ({ meta: [{ title: "Novo evento clínico — Amparo" }] }),
   validateSearch: searchSchema,
   component: NovoEvento,

@@ -40,7 +40,7 @@ import { BottomNav } from "@/components/layout/BottomNav";
 import { PatientSelector } from "@/components/patients/PatientSelector";
 import { usePatients } from "@/hooks/useActivePatient";
 
-export const Route = createFileRoute("/documentos/")({
+export const Route = createFileRoute("/_authenticated/documentos/")({
   head: () => ({ meta: [{ title: "Documentos — Amparo" }] }),
   component: DocumentosList,
 });

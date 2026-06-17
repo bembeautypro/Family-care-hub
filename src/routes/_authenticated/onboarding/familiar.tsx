@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { OnboardingProgress } from "@/components/onboarding/ProgressBar";
 
-export const Route = createFileRoute("/onboarding/familiar")({
+export const Route = createFileRoute("/_authenticated/onboarding/familiar")({
   head: () => ({ meta: [{ title: "Adicionar familiar — Amparo" }] }),
   component: Familiar,
 });

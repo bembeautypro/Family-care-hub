@@ -9,55 +9,35 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as PerfilRouteImport } from './routes/perfil'
-import { Route as HistoricoRouteImport } from './routes/historico'
-import { Route as FamiliaRouteImport } from './routes/familia'
-import { Route as EmergenciaRouteImport } from './routes/emergencia'
-import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as MedicamentosIndexRouteImport } from './routes/medicamentos.index'
-import { Route as DocumentosIndexRouteImport } from './routes/documentos.index'
-import { Route as AgendaIndexRouteImport } from './routes/agenda.index'
-import { Route as PacienteIdRouteImport } from './routes/paciente.$id'
-import { Route as OnboardingPrimeiraAcaoRouteImport } from './routes/onboarding/primeira-acao'
-import { Route as OnboardingFamiliarRouteImport } from './routes/onboarding/familiar'
-import { Route as OnboardingFamiliaRouteImport } from './routes/onboarding/familia'
-import { Route as OnboardingEmergenciaRouteImport } from './routes/onboarding/emergencia'
-import { Route as MedicamentosNovoRouteImport } from './routes/medicamentos.novo'
-import { Route as EventosNovoRouteImport } from './routes/eventos.novo'
 import { Route as ETokenRouteImport } from './routes/e.$token'
-import { Route as DocumentosNovoRouteImport } from './routes/documentos.novo'
 import { Route as ConviteTokenRouteImport } from './routes/convite.$token'
 import { Route as AuthRegistroRouteImport } from './routes/auth/registro'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
-import { Route as AgendaNovaRouteImport } from './routes/agenda.nova'
-import { Route as MedicamentosIdEditarRouteImport } from './routes/medicamentos.$id.editar'
-import { Route as EventosIdEditarRouteImport } from './routes/eventos.$id.editar'
-import { Route as AgendaIdEditarRouteImport } from './routes/agenda.$id.editar'
+import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated/perfil'
+import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
+import { Route as AuthenticatedFamiliaRouteImport } from './routes/_authenticated/familia'
+import { Route as AuthenticatedEmergenciaRouteImport } from './routes/_authenticated/emergencia'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedMedicamentosIndexRouteImport } from './routes/_authenticated/medicamentos.index'
+import { Route as AuthenticatedDocumentosIndexRouteImport } from './routes/_authenticated/documentos.index'
+import { Route as AuthenticatedAgendaIndexRouteImport } from './routes/_authenticated/agenda.index'
+import { Route as AuthenticatedPacienteIdRouteImport } from './routes/_authenticated/paciente.$id'
+import { Route as AuthenticatedOnboardingPrimeiraAcaoRouteImport } from './routes/_authenticated/onboarding/primeira-acao'
+import { Route as AuthenticatedOnboardingFamiliarRouteImport } from './routes/_authenticated/onboarding/familiar'
+import { Route as AuthenticatedOnboardingFamiliaRouteImport } from './routes/_authenticated/onboarding/familia'
+import { Route as AuthenticatedOnboardingEmergenciaRouteImport } from './routes/_authenticated/onboarding/emergencia'
+import { Route as AuthenticatedMedicamentosNovoRouteImport } from './routes/_authenticated/medicamentos.novo'
+import { Route as AuthenticatedEventosNovoRouteImport } from './routes/_authenticated/eventos.novo'
+import { Route as AuthenticatedDocumentosNovoRouteImport } from './routes/_authenticated/documentos.novo'
+import { Route as AuthenticatedAgendaNovaRouteImport } from './routes/_authenticated/agenda.nova'
+import { Route as AuthenticatedMedicamentosIdEditarRouteImport } from './routes/_authenticated/medicamentos.$id.editar'
+import { Route as AuthenticatedEventosIdEditarRouteImport } from './routes/_authenticated/eventos.$id.editar'
+import { Route as AuthenticatedAgendaIdEditarRouteImport } from './routes/_authenticated/agenda.$id.editar'
 
-const PerfilRoute = PerfilRouteImport.update({
-  id: '/perfil',
-  path: '/perfil',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HistoricoRoute = HistoricoRouteImport.update({
-  id: '/historico',
-  path: '/historico',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FamiliaRoute = FamiliaRouteImport.update({
-  id: '/familia',
-  path: '/familia',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EmergenciaRoute = EmergenciaRouteImport.update({
-  id: '/emergencia',
-  path: '/emergencia',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -65,64 +45,9 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MedicamentosIndexRoute = MedicamentosIndexRouteImport.update({
-  id: '/medicamentos/',
-  path: '/medicamentos/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocumentosIndexRoute = DocumentosIndexRouteImport.update({
-  id: '/documentos/',
-  path: '/documentos/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AgendaIndexRoute = AgendaIndexRouteImport.update({
-  id: '/agenda/',
-  path: '/agenda/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PacienteIdRoute = PacienteIdRouteImport.update({
-  id: '/paciente/$id',
-  path: '/paciente/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OnboardingPrimeiraAcaoRoute = OnboardingPrimeiraAcaoRouteImport.update({
-  id: '/onboarding/primeira-acao',
-  path: '/onboarding/primeira-acao',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OnboardingFamiliarRoute = OnboardingFamiliarRouteImport.update({
-  id: '/onboarding/familiar',
-  path: '/onboarding/familiar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OnboardingFamiliaRoute = OnboardingFamiliaRouteImport.update({
-  id: '/onboarding/familia',
-  path: '/onboarding/familia',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OnboardingEmergenciaRoute = OnboardingEmergenciaRouteImport.update({
-  id: '/onboarding/emergencia',
-  path: '/onboarding/emergencia',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MedicamentosNovoRoute = MedicamentosNovoRouteImport.update({
-  id: '/medicamentos/novo',
-  path: '/medicamentos/novo',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EventosNovoRoute = EventosNovoRouteImport.update({
-  id: '/eventos/novo',
-  path: '/eventos/novo',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ETokenRoute = ETokenRouteImport.update({
   id: '/e/$token',
   path: '/e/$token',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocumentosNovoRoute = DocumentosNovoRouteImport.update({
-  id: '/documentos/novo',
-  path: '/documentos/novo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConviteTokenRoute = ConviteTokenRouteImport.update({
@@ -140,108 +65,202 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/auth/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AgendaNovaRoute = AgendaNovaRouteImport.update({
+const AuthenticatedPerfilRoute = AuthenticatedPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHistoricoRoute = AuthenticatedHistoricoRouteImport.update({
+  id: '/historico',
+  path: '/historico',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedFamiliaRoute = AuthenticatedFamiliaRouteImport.update({
+  id: '/familia',
+  path: '/familia',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedEmergenciaRoute = AuthenticatedEmergenciaRouteImport.update({
+  id: '/emergencia',
+  path: '/emergencia',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMedicamentosIndexRoute =
+  AuthenticatedMedicamentosIndexRouteImport.update({
+    id: '/medicamentos/',
+    path: '/medicamentos/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDocumentosIndexRoute =
+  AuthenticatedDocumentosIndexRouteImport.update({
+    id: '/documentos/',
+    path: '/documentos/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAgendaIndexRoute =
+  AuthenticatedAgendaIndexRouteImport.update({
+    id: '/agenda/',
+    path: '/agenda/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPacienteIdRoute = AuthenticatedPacienteIdRouteImport.update({
+  id: '/paciente/$id',
+  path: '/paciente/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOnboardingPrimeiraAcaoRoute =
+  AuthenticatedOnboardingPrimeiraAcaoRouteImport.update({
+    id: '/onboarding/primeira-acao',
+    path: '/onboarding/primeira-acao',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedOnboardingFamiliarRoute =
+  AuthenticatedOnboardingFamiliarRouteImport.update({
+    id: '/onboarding/familiar',
+    path: '/onboarding/familiar',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedOnboardingFamiliaRoute =
+  AuthenticatedOnboardingFamiliaRouteImport.update({
+    id: '/onboarding/familia',
+    path: '/onboarding/familia',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedOnboardingEmergenciaRoute =
+  AuthenticatedOnboardingEmergenciaRouteImport.update({
+    id: '/onboarding/emergencia',
+    path: '/onboarding/emergencia',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMedicamentosNovoRoute =
+  AuthenticatedMedicamentosNovoRouteImport.update({
+    id: '/medicamentos/novo',
+    path: '/medicamentos/novo',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEventosNovoRoute =
+  AuthenticatedEventosNovoRouteImport.update({
+    id: '/eventos/novo',
+    path: '/eventos/novo',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDocumentosNovoRoute =
+  AuthenticatedDocumentosNovoRouteImport.update({
+    id: '/documentos/novo',
+    path: '/documentos/novo',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAgendaNovaRoute = AuthenticatedAgendaNovaRouteImport.update({
   id: '/agenda/nova',
   path: '/agenda/nova',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const MedicamentosIdEditarRoute = MedicamentosIdEditarRouteImport.update({
-  id: '/medicamentos/$id/editar',
-  path: '/medicamentos/$id/editar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EventosIdEditarRoute = EventosIdEditarRouteImport.update({
-  id: '/eventos/$id/editar',
-  path: '/eventos/$id/editar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AgendaIdEditarRoute = AgendaIdEditarRouteImport.update({
-  id: '/agenda/$id/editar',
-  path: '/agenda/$id/editar',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const AuthenticatedMedicamentosIdEditarRoute =
+  AuthenticatedMedicamentosIdEditarRouteImport.update({
+    id: '/medicamentos/$id/editar',
+    path: '/medicamentos/$id/editar',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEventosIdEditarRoute =
+  AuthenticatedEventosIdEditarRouteImport.update({
+    id: '/eventos/$id/editar',
+    path: '/eventos/$id/editar',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAgendaIdEditarRoute =
+  AuthenticatedAgendaIdEditarRouteImport.update({
+    id: '/agenda/$id/editar',
+    path: '/agenda/$id/editar',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
-  '/emergencia': typeof EmergenciaRoute
-  '/familia': typeof FamiliaRoute
-  '/historico': typeof HistoricoRoute
-  '/perfil': typeof PerfilRoute
-  '/agenda/nova': typeof AgendaNovaRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/emergencia': typeof AuthenticatedEmergenciaRoute
+  '/familia': typeof AuthenticatedFamiliaRoute
+  '/historico': typeof AuthenticatedHistoricoRoute
+  '/perfil': typeof AuthenticatedPerfilRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/registro': typeof AuthRegistroRoute
   '/convite/$token': typeof ConviteTokenRoute
-  '/documentos/novo': typeof DocumentosNovoRoute
   '/e/$token': typeof ETokenRoute
-  '/eventos/novo': typeof EventosNovoRoute
-  '/medicamentos/novo': typeof MedicamentosNovoRoute
-  '/onboarding/emergencia': typeof OnboardingEmergenciaRoute
-  '/onboarding/familia': typeof OnboardingFamiliaRoute
-  '/onboarding/familiar': typeof OnboardingFamiliarRoute
-  '/onboarding/primeira-acao': typeof OnboardingPrimeiraAcaoRoute
-  '/paciente/$id': typeof PacienteIdRoute
-  '/agenda/': typeof AgendaIndexRoute
-  '/documentos/': typeof DocumentosIndexRoute
-  '/medicamentos/': typeof MedicamentosIndexRoute
-  '/agenda/$id/editar': typeof AgendaIdEditarRoute
-  '/eventos/$id/editar': typeof EventosIdEditarRoute
-  '/medicamentos/$id/editar': typeof MedicamentosIdEditarRoute
+  '/agenda/nova': typeof AuthenticatedAgendaNovaRoute
+  '/documentos/novo': typeof AuthenticatedDocumentosNovoRoute
+  '/eventos/novo': typeof AuthenticatedEventosNovoRoute
+  '/medicamentos/novo': typeof AuthenticatedMedicamentosNovoRoute
+  '/onboarding/emergencia': typeof AuthenticatedOnboardingEmergenciaRoute
+  '/onboarding/familia': typeof AuthenticatedOnboardingFamiliaRoute
+  '/onboarding/familiar': typeof AuthenticatedOnboardingFamiliarRoute
+  '/onboarding/primeira-acao': typeof AuthenticatedOnboardingPrimeiraAcaoRoute
+  '/paciente/$id': typeof AuthenticatedPacienteIdRoute
+  '/agenda/': typeof AuthenticatedAgendaIndexRoute
+  '/documentos/': typeof AuthenticatedDocumentosIndexRoute
+  '/medicamentos/': typeof AuthenticatedMedicamentosIndexRoute
+  '/agenda/$id/editar': typeof AuthenticatedAgendaIdEditarRoute
+  '/eventos/$id/editar': typeof AuthenticatedEventosIdEditarRoute
+  '/medicamentos/$id/editar': typeof AuthenticatedMedicamentosIdEditarRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
-  '/emergencia': typeof EmergenciaRoute
-  '/familia': typeof FamiliaRoute
-  '/historico': typeof HistoricoRoute
-  '/perfil': typeof PerfilRoute
-  '/agenda/nova': typeof AgendaNovaRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/emergencia': typeof AuthenticatedEmergenciaRoute
+  '/familia': typeof AuthenticatedFamiliaRoute
+  '/historico': typeof AuthenticatedHistoricoRoute
+  '/perfil': typeof AuthenticatedPerfilRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/registro': typeof AuthRegistroRoute
   '/convite/$token': typeof ConviteTokenRoute
-  '/documentos/novo': typeof DocumentosNovoRoute
   '/e/$token': typeof ETokenRoute
-  '/eventos/novo': typeof EventosNovoRoute
-  '/medicamentos/novo': typeof MedicamentosNovoRoute
-  '/onboarding/emergencia': typeof OnboardingEmergenciaRoute
-  '/onboarding/familia': typeof OnboardingFamiliaRoute
-  '/onboarding/familiar': typeof OnboardingFamiliarRoute
-  '/onboarding/primeira-acao': typeof OnboardingPrimeiraAcaoRoute
-  '/paciente/$id': typeof PacienteIdRoute
-  '/agenda': typeof AgendaIndexRoute
-  '/documentos': typeof DocumentosIndexRoute
-  '/medicamentos': typeof MedicamentosIndexRoute
-  '/agenda/$id/editar': typeof AgendaIdEditarRoute
-  '/eventos/$id/editar': typeof EventosIdEditarRoute
-  '/medicamentos/$id/editar': typeof MedicamentosIdEditarRoute
+  '/agenda/nova': typeof AuthenticatedAgendaNovaRoute
+  '/documentos/novo': typeof AuthenticatedDocumentosNovoRoute
+  '/eventos/novo': typeof AuthenticatedEventosNovoRoute
+  '/medicamentos/novo': typeof AuthenticatedMedicamentosNovoRoute
+  '/onboarding/emergencia': typeof AuthenticatedOnboardingEmergenciaRoute
+  '/onboarding/familia': typeof AuthenticatedOnboardingFamiliaRoute
+  '/onboarding/familiar': typeof AuthenticatedOnboardingFamiliarRoute
+  '/onboarding/primeira-acao': typeof AuthenticatedOnboardingPrimeiraAcaoRoute
+  '/paciente/$id': typeof AuthenticatedPacienteIdRoute
+  '/agenda': typeof AuthenticatedAgendaIndexRoute
+  '/documentos': typeof AuthenticatedDocumentosIndexRoute
+  '/medicamentos': typeof AuthenticatedMedicamentosIndexRoute
+  '/agenda/$id/editar': typeof AuthenticatedAgendaIdEditarRoute
+  '/eventos/$id/editar': typeof AuthenticatedEventosIdEditarRoute
+  '/medicamentos/$id/editar': typeof AuthenticatedMedicamentosIdEditarRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
-  '/emergencia': typeof EmergenciaRoute
-  '/familia': typeof FamiliaRoute
-  '/historico': typeof HistoricoRoute
-  '/perfil': typeof PerfilRoute
-  '/agenda/nova': typeof AgendaNovaRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/emergencia': typeof AuthenticatedEmergenciaRoute
+  '/_authenticated/familia': typeof AuthenticatedFamiliaRoute
+  '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
+  '/_authenticated/perfil': typeof AuthenticatedPerfilRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/registro': typeof AuthRegistroRoute
   '/convite/$token': typeof ConviteTokenRoute
-  '/documentos/novo': typeof DocumentosNovoRoute
   '/e/$token': typeof ETokenRoute
-  '/eventos/novo': typeof EventosNovoRoute
-  '/medicamentos/novo': typeof MedicamentosNovoRoute
-  '/onboarding/emergencia': typeof OnboardingEmergenciaRoute
-  '/onboarding/familia': typeof OnboardingFamiliaRoute
-  '/onboarding/familiar': typeof OnboardingFamiliarRoute
-  '/onboarding/primeira-acao': typeof OnboardingPrimeiraAcaoRoute
-  '/paciente/$id': typeof PacienteIdRoute
-  '/agenda/': typeof AgendaIndexRoute
-  '/documentos/': typeof DocumentosIndexRoute
-  '/medicamentos/': typeof MedicamentosIndexRoute
-  '/agenda/$id/editar': typeof AgendaIdEditarRoute
-  '/eventos/$id/editar': typeof EventosIdEditarRoute
-  '/medicamentos/$id/editar': typeof MedicamentosIdEditarRoute
+  '/_authenticated/agenda/nova': typeof AuthenticatedAgendaNovaRoute
+  '/_authenticated/documentos/novo': typeof AuthenticatedDocumentosNovoRoute
+  '/_authenticated/eventos/novo': typeof AuthenticatedEventosNovoRoute
+  '/_authenticated/medicamentos/novo': typeof AuthenticatedMedicamentosNovoRoute
+  '/_authenticated/onboarding/emergencia': typeof AuthenticatedOnboardingEmergenciaRoute
+  '/_authenticated/onboarding/familia': typeof AuthenticatedOnboardingFamiliaRoute
+  '/_authenticated/onboarding/familiar': typeof AuthenticatedOnboardingFamiliarRoute
+  '/_authenticated/onboarding/primeira-acao': typeof AuthenticatedOnboardingPrimeiraAcaoRoute
+  '/_authenticated/paciente/$id': typeof AuthenticatedPacienteIdRoute
+  '/_authenticated/agenda/': typeof AuthenticatedAgendaIndexRoute
+  '/_authenticated/documentos/': typeof AuthenticatedDocumentosIndexRoute
+  '/_authenticated/medicamentos/': typeof AuthenticatedMedicamentosIndexRoute
+  '/_authenticated/agenda/$id/editar': typeof AuthenticatedAgendaIdEditarRoute
+  '/_authenticated/eventos/$id/editar': typeof AuthenticatedEventosIdEditarRoute
+  '/_authenticated/medicamentos/$id/editar': typeof AuthenticatedMedicamentosIdEditarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -252,12 +271,12 @@ export interface FileRouteTypes {
     | '/familia'
     | '/historico'
     | '/perfil'
-    | '/agenda/nova'
     | '/auth/login'
     | '/auth/registro'
     | '/convite/$token'
-    | '/documentos/novo'
     | '/e/$token'
+    | '/agenda/nova'
+    | '/documentos/novo'
     | '/eventos/novo'
     | '/medicamentos/novo'
     | '/onboarding/emergencia'
@@ -279,12 +298,12 @@ export interface FileRouteTypes {
     | '/familia'
     | '/historico'
     | '/perfil'
-    | '/agenda/nova'
     | '/auth/login'
     | '/auth/registro'
     | '/convite/$token'
-    | '/documentos/novo'
     | '/e/$token'
+    | '/agenda/nova'
+    | '/documentos/novo'
     | '/eventos/novo'
     | '/medicamentos/novo'
     | '/onboarding/emergencia'
@@ -301,95 +320,49 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/dashboard'
-    | '/emergencia'
-    | '/familia'
-    | '/historico'
-    | '/perfil'
-    | '/agenda/nova'
+    | '/_authenticated'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/emergencia'
+    | '/_authenticated/familia'
+    | '/_authenticated/historico'
+    | '/_authenticated/perfil'
     | '/auth/login'
     | '/auth/registro'
     | '/convite/$token'
-    | '/documentos/novo'
     | '/e/$token'
-    | '/eventos/novo'
-    | '/medicamentos/novo'
-    | '/onboarding/emergencia'
-    | '/onboarding/familia'
-    | '/onboarding/familiar'
-    | '/onboarding/primeira-acao'
-    | '/paciente/$id'
-    | '/agenda/'
-    | '/documentos/'
-    | '/medicamentos/'
-    | '/agenda/$id/editar'
-    | '/eventos/$id/editar'
-    | '/medicamentos/$id/editar'
+    | '/_authenticated/agenda/nova'
+    | '/_authenticated/documentos/novo'
+    | '/_authenticated/eventos/novo'
+    | '/_authenticated/medicamentos/novo'
+    | '/_authenticated/onboarding/emergencia'
+    | '/_authenticated/onboarding/familia'
+    | '/_authenticated/onboarding/familiar'
+    | '/_authenticated/onboarding/primeira-acao'
+    | '/_authenticated/paciente/$id'
+    | '/_authenticated/agenda/'
+    | '/_authenticated/documentos/'
+    | '/_authenticated/medicamentos/'
+    | '/_authenticated/agenda/$id/editar'
+    | '/_authenticated/eventos/$id/editar'
+    | '/_authenticated/medicamentos/$id/editar'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DashboardRoute: typeof DashboardRoute
-  EmergenciaRoute: typeof EmergenciaRoute
-  FamiliaRoute: typeof FamiliaRoute
-  HistoricoRoute: typeof HistoricoRoute
-  PerfilRoute: typeof PerfilRoute
-  AgendaNovaRoute: typeof AgendaNovaRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegistroRoute: typeof AuthRegistroRoute
   ConviteTokenRoute: typeof ConviteTokenRoute
-  DocumentosNovoRoute: typeof DocumentosNovoRoute
   ETokenRoute: typeof ETokenRoute
-  EventosNovoRoute: typeof EventosNovoRoute
-  MedicamentosNovoRoute: typeof MedicamentosNovoRoute
-  OnboardingEmergenciaRoute: typeof OnboardingEmergenciaRoute
-  OnboardingFamiliaRoute: typeof OnboardingFamiliaRoute
-  OnboardingFamiliarRoute: typeof OnboardingFamiliarRoute
-  OnboardingPrimeiraAcaoRoute: typeof OnboardingPrimeiraAcaoRoute
-  PacienteIdRoute: typeof PacienteIdRoute
-  AgendaIndexRoute: typeof AgendaIndexRoute
-  DocumentosIndexRoute: typeof DocumentosIndexRoute
-  MedicamentosIndexRoute: typeof MedicamentosIndexRoute
-  AgendaIdEditarRoute: typeof AgendaIdEditarRoute
-  EventosIdEditarRoute: typeof EventosIdEditarRoute
-  MedicamentosIdEditarRoute: typeof MedicamentosIdEditarRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/perfil': {
-      id: '/perfil'
-      path: '/perfil'
-      fullPath: '/perfil'
-      preLoaderRoute: typeof PerfilRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/historico': {
-      id: '/historico'
-      path: '/historico'
-      fullPath: '/historico'
-      preLoaderRoute: typeof HistoricoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/familia': {
-      id: '/familia'
-      path: '/familia'
-      fullPath: '/familia'
-      preLoaderRoute: typeof FamiliaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/emergencia': {
-      id: '/emergencia'
-      path: '/emergencia'
-      fullPath: '/emergencia'
-      preLoaderRoute: typeof EmergenciaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -399,88 +372,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/medicamentos/': {
-      id: '/medicamentos/'
-      path: '/medicamentos'
-      fullPath: '/medicamentos/'
-      preLoaderRoute: typeof MedicamentosIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/documentos/': {
-      id: '/documentos/'
-      path: '/documentos'
-      fullPath: '/documentos/'
-      preLoaderRoute: typeof DocumentosIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/agenda/': {
-      id: '/agenda/'
-      path: '/agenda'
-      fullPath: '/agenda/'
-      preLoaderRoute: typeof AgendaIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/paciente/$id': {
-      id: '/paciente/$id'
-      path: '/paciente/$id'
-      fullPath: '/paciente/$id'
-      preLoaderRoute: typeof PacienteIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/onboarding/primeira-acao': {
-      id: '/onboarding/primeira-acao'
-      path: '/onboarding/primeira-acao'
-      fullPath: '/onboarding/primeira-acao'
-      preLoaderRoute: typeof OnboardingPrimeiraAcaoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/onboarding/familiar': {
-      id: '/onboarding/familiar'
-      path: '/onboarding/familiar'
-      fullPath: '/onboarding/familiar'
-      preLoaderRoute: typeof OnboardingFamiliarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/onboarding/familia': {
-      id: '/onboarding/familia'
-      path: '/onboarding/familia'
-      fullPath: '/onboarding/familia'
-      preLoaderRoute: typeof OnboardingFamiliaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/onboarding/emergencia': {
-      id: '/onboarding/emergencia'
-      path: '/onboarding/emergencia'
-      fullPath: '/onboarding/emergencia'
-      preLoaderRoute: typeof OnboardingEmergenciaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/medicamentos/novo': {
-      id: '/medicamentos/novo'
-      path: '/medicamentos/novo'
-      fullPath: '/medicamentos/novo'
-      preLoaderRoute: typeof MedicamentosNovoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/eventos/novo': {
-      id: '/eventos/novo'
-      path: '/eventos/novo'
-      fullPath: '/eventos/novo'
-      preLoaderRoute: typeof EventosNovoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/e/$token': {
       id: '/e/$token'
       path: '/e/$token'
       fullPath: '/e/$token'
       preLoaderRoute: typeof ETokenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/documentos/novo': {
-      id: '/documentos/novo'
-      path: '/documentos/novo'
-      fullPath: '/documentos/novo'
-      preLoaderRoute: typeof DocumentosNovoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/convite/$token': {
@@ -504,63 +400,208 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/agenda/nova': {
-      id: '/agenda/nova'
+    '/_authenticated/perfil': {
+      id: '/_authenticated/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof AuthenticatedPerfilRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/historico': {
+      id: '/_authenticated/historico'
+      path: '/historico'
+      fullPath: '/historico'
+      preLoaderRoute: typeof AuthenticatedHistoricoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/familia': {
+      id: '/_authenticated/familia'
+      path: '/familia'
+      fullPath: '/familia'
+      preLoaderRoute: typeof AuthenticatedFamiliaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/emergencia': {
+      id: '/_authenticated/emergencia'
+      path: '/emergencia'
+      fullPath: '/emergencia'
+      preLoaderRoute: typeof AuthenticatedEmergenciaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/medicamentos/': {
+      id: '/_authenticated/medicamentos/'
+      path: '/medicamentos'
+      fullPath: '/medicamentos/'
+      preLoaderRoute: typeof AuthenticatedMedicamentosIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/documentos/': {
+      id: '/_authenticated/documentos/'
+      path: '/documentos'
+      fullPath: '/documentos/'
+      preLoaderRoute: typeof AuthenticatedDocumentosIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/agenda/': {
+      id: '/_authenticated/agenda/'
+      path: '/agenda'
+      fullPath: '/agenda/'
+      preLoaderRoute: typeof AuthenticatedAgendaIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/paciente/$id': {
+      id: '/_authenticated/paciente/$id'
+      path: '/paciente/$id'
+      fullPath: '/paciente/$id'
+      preLoaderRoute: typeof AuthenticatedPacienteIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/onboarding/primeira-acao': {
+      id: '/_authenticated/onboarding/primeira-acao'
+      path: '/onboarding/primeira-acao'
+      fullPath: '/onboarding/primeira-acao'
+      preLoaderRoute: typeof AuthenticatedOnboardingPrimeiraAcaoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/onboarding/familiar': {
+      id: '/_authenticated/onboarding/familiar'
+      path: '/onboarding/familiar'
+      fullPath: '/onboarding/familiar'
+      preLoaderRoute: typeof AuthenticatedOnboardingFamiliarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/onboarding/familia': {
+      id: '/_authenticated/onboarding/familia'
+      path: '/onboarding/familia'
+      fullPath: '/onboarding/familia'
+      preLoaderRoute: typeof AuthenticatedOnboardingFamiliaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/onboarding/emergencia': {
+      id: '/_authenticated/onboarding/emergencia'
+      path: '/onboarding/emergencia'
+      fullPath: '/onboarding/emergencia'
+      preLoaderRoute: typeof AuthenticatedOnboardingEmergenciaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/medicamentos/novo': {
+      id: '/_authenticated/medicamentos/novo'
+      path: '/medicamentos/novo'
+      fullPath: '/medicamentos/novo'
+      preLoaderRoute: typeof AuthenticatedMedicamentosNovoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/eventos/novo': {
+      id: '/_authenticated/eventos/novo'
+      path: '/eventos/novo'
+      fullPath: '/eventos/novo'
+      preLoaderRoute: typeof AuthenticatedEventosNovoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/documentos/novo': {
+      id: '/_authenticated/documentos/novo'
+      path: '/documentos/novo'
+      fullPath: '/documentos/novo'
+      preLoaderRoute: typeof AuthenticatedDocumentosNovoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/agenda/nova': {
+      id: '/_authenticated/agenda/nova'
       path: '/agenda/nova'
       fullPath: '/agenda/nova'
-      preLoaderRoute: typeof AgendaNovaRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedAgendaNovaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/medicamentos/$id/editar': {
-      id: '/medicamentos/$id/editar'
+    '/_authenticated/medicamentos/$id/editar': {
+      id: '/_authenticated/medicamentos/$id/editar'
       path: '/medicamentos/$id/editar'
       fullPath: '/medicamentos/$id/editar'
-      preLoaderRoute: typeof MedicamentosIdEditarRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedMedicamentosIdEditarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/eventos/$id/editar': {
-      id: '/eventos/$id/editar'
+    '/_authenticated/eventos/$id/editar': {
+      id: '/_authenticated/eventos/$id/editar'
       path: '/eventos/$id/editar'
       fullPath: '/eventos/$id/editar'
-      preLoaderRoute: typeof EventosIdEditarRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedEventosIdEditarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/agenda/$id/editar': {
-      id: '/agenda/$id/editar'
+    '/_authenticated/agenda/$id/editar': {
+      id: '/_authenticated/agenda/$id/editar'
       path: '/agenda/$id/editar'
       fullPath: '/agenda/$id/editar'
-      preLoaderRoute: typeof AgendaIdEditarRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedAgendaIdEditarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedEmergenciaRoute: typeof AuthenticatedEmergenciaRoute
+  AuthenticatedFamiliaRoute: typeof AuthenticatedFamiliaRoute
+  AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
+  AuthenticatedPerfilRoute: typeof AuthenticatedPerfilRoute
+  AuthenticatedAgendaNovaRoute: typeof AuthenticatedAgendaNovaRoute
+  AuthenticatedDocumentosNovoRoute: typeof AuthenticatedDocumentosNovoRoute
+  AuthenticatedEventosNovoRoute: typeof AuthenticatedEventosNovoRoute
+  AuthenticatedMedicamentosNovoRoute: typeof AuthenticatedMedicamentosNovoRoute
+  AuthenticatedOnboardingEmergenciaRoute: typeof AuthenticatedOnboardingEmergenciaRoute
+  AuthenticatedOnboardingFamiliaRoute: typeof AuthenticatedOnboardingFamiliaRoute
+  AuthenticatedOnboardingFamiliarRoute: typeof AuthenticatedOnboardingFamiliarRoute
+  AuthenticatedOnboardingPrimeiraAcaoRoute: typeof AuthenticatedOnboardingPrimeiraAcaoRoute
+  AuthenticatedPacienteIdRoute: typeof AuthenticatedPacienteIdRoute
+  AuthenticatedAgendaIndexRoute: typeof AuthenticatedAgendaIndexRoute
+  AuthenticatedDocumentosIndexRoute: typeof AuthenticatedDocumentosIndexRoute
+  AuthenticatedMedicamentosIndexRoute: typeof AuthenticatedMedicamentosIndexRoute
+  AuthenticatedAgendaIdEditarRoute: typeof AuthenticatedAgendaIdEditarRoute
+  AuthenticatedEventosIdEditarRoute: typeof AuthenticatedEventosIdEditarRoute
+  AuthenticatedMedicamentosIdEditarRoute: typeof AuthenticatedMedicamentosIdEditarRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedEmergenciaRoute: AuthenticatedEmergenciaRoute,
+  AuthenticatedFamiliaRoute: AuthenticatedFamiliaRoute,
+  AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
+  AuthenticatedPerfilRoute: AuthenticatedPerfilRoute,
+  AuthenticatedAgendaNovaRoute: AuthenticatedAgendaNovaRoute,
+  AuthenticatedDocumentosNovoRoute: AuthenticatedDocumentosNovoRoute,
+  AuthenticatedEventosNovoRoute: AuthenticatedEventosNovoRoute,
+  AuthenticatedMedicamentosNovoRoute: AuthenticatedMedicamentosNovoRoute,
+  AuthenticatedOnboardingEmergenciaRoute:
+    AuthenticatedOnboardingEmergenciaRoute,
+  AuthenticatedOnboardingFamiliaRoute: AuthenticatedOnboardingFamiliaRoute,
+  AuthenticatedOnboardingFamiliarRoute: AuthenticatedOnboardingFamiliarRoute,
+  AuthenticatedOnboardingPrimeiraAcaoRoute:
+    AuthenticatedOnboardingPrimeiraAcaoRoute,
+  AuthenticatedPacienteIdRoute: AuthenticatedPacienteIdRoute,
+  AuthenticatedAgendaIndexRoute: AuthenticatedAgendaIndexRoute,
+  AuthenticatedDocumentosIndexRoute: AuthenticatedDocumentosIndexRoute,
+  AuthenticatedMedicamentosIndexRoute: AuthenticatedMedicamentosIndexRoute,
+  AuthenticatedAgendaIdEditarRoute: AuthenticatedAgendaIdEditarRoute,
+  AuthenticatedEventosIdEditarRoute: AuthenticatedEventosIdEditarRoute,
+  AuthenticatedMedicamentosIdEditarRoute:
+    AuthenticatedMedicamentosIdEditarRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DashboardRoute: DashboardRoute,
-  EmergenciaRoute: EmergenciaRoute,
-  FamiliaRoute: FamiliaRoute,
-  HistoricoRoute: HistoricoRoute,
-  PerfilRoute: PerfilRoute,
-  AgendaNovaRoute: AgendaNovaRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegistroRoute: AuthRegistroRoute,
   ConviteTokenRoute: ConviteTokenRoute,
-  DocumentosNovoRoute: DocumentosNovoRoute,
   ETokenRoute: ETokenRoute,
-  EventosNovoRoute: EventosNovoRoute,
-  MedicamentosNovoRoute: MedicamentosNovoRoute,
-  OnboardingEmergenciaRoute: OnboardingEmergenciaRoute,
-  OnboardingFamiliaRoute: OnboardingFamiliaRoute,
-  OnboardingFamiliarRoute: OnboardingFamiliarRoute,
-  OnboardingPrimeiraAcaoRoute: OnboardingPrimeiraAcaoRoute,
-  PacienteIdRoute: PacienteIdRoute,
-  AgendaIndexRoute: AgendaIndexRoute,
-  DocumentosIndexRoute: DocumentosIndexRoute,
-  MedicamentosIndexRoute: MedicamentosIndexRoute,
-  AgendaIdEditarRoute: AgendaIdEditarRoute,
-  EventosIdEditarRoute: EventosIdEditarRoute,
-  MedicamentosIdEditarRoute: MedicamentosIdEditarRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

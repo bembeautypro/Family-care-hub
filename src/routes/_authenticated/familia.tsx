@@ -54,7 +54,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { BottomNav } from "@/components/layout/BottomNav";
 
-export const Route = createFileRoute("/familia")({
+export const Route = createFileRoute("/_authenticated/familia")({
   head: () => ({ meta: [{ title: "Família — Amparo" }] }),
   component: FamiliaPage,
 });

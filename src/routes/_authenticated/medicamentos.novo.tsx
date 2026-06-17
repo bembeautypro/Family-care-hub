@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePatients } from "@/hooks/useActivePatient";
 import { MedicationForm } from "@/components/medicamentos/MedicationForm";
 
-export const Route = createFileRoute("/medicamentos/novo")({
+export const Route = createFileRoute("/_authenticated/medicamentos/novo")({
   head: () => ({ meta: [{ title: "Novo medicamento — Amparo" }] }),
   component: NovoMedicamento,
 });

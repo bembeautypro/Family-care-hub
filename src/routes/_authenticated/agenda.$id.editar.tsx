@@ -10,7 +10,7 @@ import {
 } from "@/components/agenda/AppointmentForm";
 import type { AppointmentStatus, AppointmentType } from "@/lib/agenda";
 
-export const Route = createFileRoute("/agenda/$id/editar")({
+export const Route = createFileRoute("/_authenticated/agenda/$id/editar")({
   head: () => ({ meta: [{ title: "Editar compromisso — Amparo" }] }),
   component: EditarCompromisso,
 });

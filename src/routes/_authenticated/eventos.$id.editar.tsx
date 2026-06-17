@@ -9,7 +9,7 @@ import {
   type ClinicalEventInitial,
 } from "@/components/eventos/ClinicalEventForm";
 
-export const Route = createFileRoute("/eventos/$id/editar")({
+export const Route = createFileRoute("/_authenticated/eventos/$id/editar")({
   head: () => ({ meta: [{ title: "Editar evento — Amparo" }] }),
   component: EditarEvento,
 });

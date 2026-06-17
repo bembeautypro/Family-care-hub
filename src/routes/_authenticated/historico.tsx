@@ -38,7 +38,7 @@ import {
   type Severity,
 } from "@/lib/historico";
 
-export const Route = createFileRoute("/historico")({
+export const Route = createFileRoute("/_authenticated/historico")({
   head: () => ({ meta: [{ title: "Histórico clínico — Amparo" }] }),
   component: HistoricoPage,
 });
