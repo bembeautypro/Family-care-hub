@@ -6,8 +6,8 @@ export const APPOINTMENT_TYPES = [
   { value: "exam", label: "Exame", icon: FlaskConical },
   { value: "return", label: "Retorno", icon: Repeat },
   { value: "procedure", label: "Procedimento", icon: Hospital },
-  { value: "physiotherapy", label: "Fisioterapia", icon: Activity },
-  { value: "vaccination", label: "Vacinação", icon: Syringe },
+  { value: "therapy", label: "Fisioterapia", icon: Activity },
+  { value: "vaccine", label: "Vacinação", icon: Syringe },
   { value: "other", label: "Outro", icon: FileText },
 ] as const;
 
