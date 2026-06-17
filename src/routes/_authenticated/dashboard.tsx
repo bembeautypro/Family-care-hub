@@ -141,6 +141,15 @@ function PatientDashboard({ patient }: { patient: Patient }) {
 
   useEffect(() => {
     const pid = patient.id;
+    let cancelled = false;
+    // reset state when patient changes so stale data does not flash
+    setAppointments(null);
+    setMedications(null);
+    setEvents(null);
+    setDocuments(null);
+    setAllergies(null);
+    setContacts(null);
+
     const now = new Date();
     const in7 = new Date();
     in7.setDate(in7.getDate() + 7);
@@ -190,6 +199,7 @@ function PatientDashboard({ patient }: { patient: Patient }) {
           .eq("patient_id", pid)
           .is("deleted_at", null),
       ]);
+      if (cancelled) return;
       setAppointments((a.data ?? []) as Appointment[]);
       setMedications((m.data ?? []) as Medication[]);
       setEvents((e.data ?? []) as ClinicalEvent[]);
@@ -197,6 +207,10 @@ function PatientDashboard({ patient }: { patient: Patient }) {
       setAllergies((al.data ?? []) as Allergy[]);
       setContacts((ec.data ?? []) as EmergencyContact[]);
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [patient.id]);
 
   const pendencies = useMemo(() => {
