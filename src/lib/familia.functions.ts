@@ -224,6 +224,8 @@ export const removeMember = createServerFn({ method: "POST" })
 
     if (targetErr) throw new Error(targetErr.message);
     if (!targetMember) throw new Error("Membro não encontrado.");
+    if (!targetMember.family_id) throw new Error("Membro sem família associada.");
+
 
     // Verify caller is admin of that family
     const { data: callerMembership, error: callerErr } = await supabaseAdmin
