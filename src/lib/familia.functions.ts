@@ -81,6 +81,9 @@ export const acceptInvitation = createServerFn({ method: "POST" })
     if (new Date(inv.expires_at) < new Date()) {
       throw new Error("Este convite expirou.");
     }
+    if (!inv.family_id || !inv.role || !inv.invited_by || !inv.id) {
+      throw new Error("Convite inválido.");
+    }
 
     // Check if user is already a member
     const { data: existing, error: existErr } = await supabaseAdmin
