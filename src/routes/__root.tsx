@@ -87,8 +87,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Lovable App" },
       { name: "twitter:description", content: "Family Care Hub is a secure platform for managing family health information and care coordination." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/6e909324-562e-4413-a1ee-fb7d6ea8ee48/id-preview-a1df7798--96384b44-2188-41a8-a4ef-52285ce6432a.lovable.app-1780344083114.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/6e909324-562e-4413-a1ee-fb7d6ea8ee48/id-preview-a1df7798--96384b44-2188-41a8-a4ef-52285ce6432a.lovable.app-1780344083114.png" },
     ],
     links: [
       {
