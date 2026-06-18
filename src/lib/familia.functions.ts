@@ -54,7 +54,7 @@ export const generateInviteLink = createServerFn({ method: "POST" })
       throw new Error(invErr?.message ?? "Falha ao gerar convite.");
     }
 
-    return { token: invitation.token as string, expiresAt: invitation.expires_at as string };
+    return { token: invitation.token, expiresAt: invitation.expires_at };
   });
 
 // ── 2. acceptInvitation ──────────────────────────────────────────────────────
@@ -78,30 +78,33 @@ export const acceptInvitation = createServerFn({ method: "POST" })
     if (invErr) throw new Error(invErr.message);
     if (!inv) throw new Error("Convite não encontrado.");
     if (inv.status !== "pending") throw new Error("Este convite já foi utilizado.");
-    if (new Date(inv.expires_at as string) < new Date()) {
+    if (new Date(inv.expires_at) < new Date()) {
       throw new Error("Este convite expirou.");
+    }
+    if (!inv.family_id || !inv.role || !inv.invited_by || !inv.id) {
+      throw new Error("Convite inválido.");
     }
 
     // Check if user is already a member
     const { data: existing, error: existErr } = await supabaseAdmin
       .from("family_members")
       .select("id")
-      .eq("family_id", inv.family_id as string)
+      .eq("family_id", inv.family_id)
       .eq("user_id", userId)
       .maybeSingle();
 
     if (existErr) throw new Error(existErr.message);
     if (existing) {
-      return { alreadyMember: true, familyId: inv.family_id as string };
+      return { alreadyMember: true, familyId: inv.family_id };
     }
 
     // Insert new member
     const { error: insertErr } = await supabaseAdmin.from("family_members").insert({
-      family_id: inv.family_id as string,
+      family_id: inv.family_id,
       user_id: userId,
-      role: inv.role as string,
+      role: inv.role,
       status: "active",
-      invited_by: inv.invited_by as string,
+      invited_by: inv.invited_by,
     });
     if (insertErr) throw new Error(insertErr.message);
 
@@ -109,7 +112,7 @@ export const acceptInvitation = createServerFn({ method: "POST" })
     const { error: updateInvErr } = await supabaseAdmin
       .from("invitations")
       .update({ status: "accepted" })
-      .eq("id", inv.id as string);
+      .eq("id", inv.id);
     if (updateInvErr) console.error("Failed to mark invitation accepted", updateInvErr);
 
     // Update onboarding_step to 3 if less than 3
@@ -127,7 +130,7 @@ export const acceptInvitation = createServerFn({ method: "POST" })
         .eq("id", userId);
     }
 
-    return { alreadyMember: false, familyId: inv.family_id as string };
+    return { alreadyMember: false, familyId: inv.family_id };
   });
 
 // ── 3. changeMemberRole ──────────────────────────────────────────────────────
@@ -154,12 +157,14 @@ export const changeMemberRole = createServerFn({ method: "POST" })
 
     if (targetErr) throw new Error(targetErr.message);
     if (!targetMember) throw new Error("Membro não encontrado.");
+    if (!targetMember.family_id) throw new Error("Membro sem família associada.");
+
 
     // Verify caller is admin of that family
     const { data: callerMembership, error: callerErr } = await supabaseAdmin
       .from("family_members")
       .select("id, role")
-      .eq("family_id", targetMember.family_id as string)
+      .eq("family_id", targetMember.family_id)
       .eq("user_id", userId)
       .eq("status", "active")
       .maybeSingle();
@@ -178,7 +183,7 @@ export const changeMemberRole = createServerFn({ method: "POST" })
       const { count, error: countErr } = await supabaseAdmin
         .from("family_members")
         .select("id", { count: "exact", head: true })
-        .eq("family_id", targetMember.family_id as string)
+        .eq("family_id", targetMember.family_id)
         .eq("role", "admin")
         .eq("status", "active");
 
@@ -219,12 +224,14 @@ export const removeMember = createServerFn({ method: "POST" })
 
     if (targetErr) throw new Error(targetErr.message);
     if (!targetMember) throw new Error("Membro não encontrado.");
+    if (!targetMember.family_id) throw new Error("Membro sem família associada.");
+
 
     // Verify caller is admin of that family
     const { data: callerMembership, error: callerErr } = await supabaseAdmin
       .from("family_members")
       .select("id, role")
-      .eq("family_id", targetMember.family_id as string)
+      .eq("family_id", targetMember.family_id)
       .eq("user_id", userId)
       .eq("status", "active")
       .maybeSingle();
@@ -239,7 +246,7 @@ export const removeMember = createServerFn({ method: "POST" })
       const { count, error: countErr } = await supabaseAdmin
         .from("family_members")
         .select("id", { count: "exact", head: true })
-        .eq("family_id", targetMember.family_id as string)
+        .eq("family_id", targetMember.family_id)
         .eq("role", "admin")
         .eq("status", "active");
 
