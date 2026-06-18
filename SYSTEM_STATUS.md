@@ -11,12 +11,13 @@
 - Enums `appointments.type` alinhados front↔DB.
 - Soft delete em documentos com `deleted_by`.
 - Índices parciais `(patient_id) WHERE deleted_at IS NULL` em 6 tabelas clínicas.
-- Status de agendamento usando tokens semânticos (sem hard-coded Tailwind).
-- Root sem `og:image` global (leaf routes podem definir o próprio).
+- Status de agendamento usando tokens semânticos.
+- Root sem `og:image` global.
+- `familia.functions.ts` sem `as string` — tipagem inferida + null-guards explícitos.
 
-## Nota de Prontidão: **8.5/10**
+## Nota de Prontidão: **8.8/10**
 
-(P0-L1 + P1-L1 + P1-L2 + P2-L1 fechados.)
+(P0-L1 + P1-L1 + P1-L2 + P2-L1 + P2-L3 fechados.)
 
 ## Riscos Abertos
 
@@ -27,16 +28,15 @@ Nenhum.
 - **M6** — `PatientDashboard` com 6 `useState`; refator React Query pendente (P2-L2).
 
 ### BAIXO
-- **B3** — `as string` em `familia.functions.ts`.
-- **B4** — `search_vector` tipado como `unknown`.
+Nenhum.
 
 ### Dívida residual
 - `useEffect` redundante de `supabase.auth.getUser()` em rotas filhas.
+- `search_vector` aparece como `unknown` em `types.ts` (arquivo auto-gerado pelo Lovable Cloud — não editável). Sem impacto em runtime: `textSearch("search_vector", ...)` recebe o nome da coluna como string literal e funciona normalmente.
 
-### Fechados neste lote (P2-L1)
-- ✅ **M5** — 6 índices parciais criados (medications, appointments, documents, patient_conditions, patient_allergies, emergency_contacts).
-- ✅ **B1** — `src/lib/agenda.ts` agora usa `bg-accent-soft|success-soft|alert-soft|warn-soft` (tokens do design system Cuida).
-- ✅ **B2** — `og:image` e `twitter:image` removidos do `__root.tsx` (apontavam para domínio de preview).
+### Fechados neste lote (P2-L3)
+- ✅ **B3** — Removidos 13 `as string` em `familia.functions.ts`. Adicionados null-guards para `inv.family_id/role/invited_by/id` em `acceptInvitation` e para `targetMember.family_id` em `changeMemberRole`/`removeMember`.
+- ✅ **B4** — Classificado como dívida documentada (tipo auto-gerado, sem impacto funcional). Ver Dívida residual.
 
 ### Itens não verificáveis sem operador
 - Cron pg_cron de purga de `access_logs` (>90d) — pendente em P3-L1.
@@ -44,4 +44,4 @@ Nenhum.
 
 ## Última Atualização
 
-2026-06-18 — Etapa: **P2-L1 concluído** (M5, B1, B2). Próximo lote: **P2-L2** (M6 React Query refactor) ou **P2-L3** (B3, B4 tipagem).
+2026-06-18 — Etapa: **P2-L3 concluído** (B3, B4). Próximo lote: **P2-L2** (M6 React Query refactor) ou avançar para P3.
