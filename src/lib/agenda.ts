@@ -19,11 +19,11 @@ export function typeMeta(value: string): { label: string; icon: LucideIcon } {
 }
 
 export const APPOINTMENT_STATUSES = [
-  { value: "scheduled", label: "Agendado", className: "bg-blue-100 text-blue-800 hover:bg-blue-100" },
-  { value: "confirmed", label: "Confirmado", className: "bg-emerald-100 text-emerald-800 hover:bg-emerald-100" },
+  { value: "scheduled", label: "Agendado", className: "bg-accent-soft text-foreground hover:bg-accent-soft" },
+  { value: "confirmed", label: "Confirmado", className: "bg-success-soft text-foreground hover:bg-success-soft" },
   { value: "done", label: "Realizado", className: "bg-muted text-foreground hover:bg-muted" },
-  { value: "cancelled", label: "Cancelado", className: "bg-red-100 text-red-800 hover:bg-red-100" },
-  { value: "rescheduled", label: "Remarcado", className: "bg-amber-100 text-amber-900 hover:bg-amber-100" },
+  { value: "cancelled", label: "Cancelado", className: "bg-alert-soft text-foreground hover:bg-alert-soft" },
+  { value: "rescheduled", label: "Remarcado", className: "bg-warn-soft text-foreground hover:bg-warn-soft" },
 ] as const;
 
 export type AppointmentStatus = (typeof APPOINTMENT_STATUSES)[number]["value"];
