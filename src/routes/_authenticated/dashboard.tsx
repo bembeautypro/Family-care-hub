@@ -171,7 +171,7 @@ function PatientDashboard({ patient }: { patient: Patient }) {
     const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
     const { data } = await supabase
       .from("medication_doses")
-      .select("medication_id, scheduled_at")
+      .select("id, medication_id, scheduled_at, taken_at, status")
       .eq("patient_id", pid)
       .gte("scheduled_at", start)
       .lt("scheduled_at", end);
