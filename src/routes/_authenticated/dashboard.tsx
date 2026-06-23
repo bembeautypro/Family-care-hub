@@ -154,6 +154,7 @@ function PatientDashboard({ patient }: { patient: Patient }) {
   const [documents, setDocuments] = useState<Document[] | null>(null);
   const [allergies, setAllergies] = useState<Allergy[] | null>(null);
   const [contacts, setContacts] = useState<EmergencyContact[] | null>(null);
+  const [doses, setDoses] = useState<DoseRecord[] | null>(null);
 
   useEffect(() => {
     const pid = patient.id;
