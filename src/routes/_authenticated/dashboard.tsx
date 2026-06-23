@@ -474,8 +474,65 @@ function AppointmentRow({ appointment }: { appointment: Appointment }) {
   );
 }
 
-function MedicationRow({ med }: { med: Medication }) {
+function MedicationRow({
+  med,
+  patientId,
+  doses,
+  onChange,
+}: {
+  med: Medication;
+  patientId: string;
+  doses: DoseRecord[];
+  onChange: () => void | Promise<void>;
+}) {
   const times = med.schedule?.times ?? [];
+  const [saving, setSaving] = useState(false);
+
+  const scheduled = useMemo(() => todayScheduledTimes(times), [times]);
+  const takenSet = useMemo(
+    () =>
+      new Set(
+        doses
+          .filter((d) => d.medication_id === med.id)
+          .map((d) => new Date(d.scheduled_at).getTime()),
+      ),
+    [doses, med.id],
+  );
+
+  const now = Date.now();
+  // earliest dose that is not yet taken
+  const pending = scheduled.find((d) => !takenSet.has(d.getTime()));
+  const overdue = pending && pending.getTime() < now ? pending : null;
+  const allDone = scheduled.length > 0 && !pending;
+
+  async function markTaken() {
+    if (!pending || saving) return;
+    setSaving(true);
+    const { data: u } = await supabase.auth.getUser();
+    const { error } = await supabase
+      .from("medication_doses")
+      .upsert(
+        {
+          medication_id: med.id,
+          patient_id: patientId,
+          scheduled_at: pending.toISOString(),
+          taken_at: new Date().toISOString(),
+          taken_by: u.user?.id ?? null,
+        },
+        { onConflict: "medication_id,scheduled_at" },
+      );
+    setSaving(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Tomada registrada.");
+    await onChange();
+  }
+
+  const fmt = (d: Date) =>
+    d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
   return (
     <li className="flex items-center gap-3 rounded-lg border bg-background p-3">
       <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -486,10 +543,40 @@ function MedicationRow({ med }: { med: Medication }) {
           {med.name}
           {med.dosage ? ` · ${med.dosage}` : ""}
         </p>
-        <p className="text-xs text-muted-foreground">
-          {times.length > 0 ? times.join(" · ") : "Sem horário"}
-        </p>
+        <div className="mt-0.5 flex flex-wrap items-center gap-2">
+          <p className="text-xs text-muted-foreground">
+            {scheduled.length === 0
+              ? "Sem horário"
+              : pending
+                ? `Próxima: ${fmt(pending)}`
+                : "Todas as doses de hoje confirmadas"}
+          </p>
+          {overdue && (
+            <Badge variant="destructive" className="gap-1 text-[10px]">
+              <AlertCircle className="h-3 w-3" />
+              Atrasado
+            </Badge>
+          )}
+          {allDone && (
+            <Badge variant="secondary" className="gap-1 text-[10px]">
+              <Check className="h-3 w-3" />
+              OK
+            </Badge>
+          )}
+        </div>
       </div>
+      {pending && (
+        <Button
+          size="sm"
+          variant={overdue ? "destructive" : "default"}
+          className="h-9 shrink-0"
+          onClick={markTaken}
+          disabled={saving}
+        >
+          <Check className="mr-1 h-4 w-4" />
+          Tomei
+        </Button>
+      )}
     </li>
   );
 }
