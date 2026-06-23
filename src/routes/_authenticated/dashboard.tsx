@@ -240,7 +240,7 @@ function PatientDashboard({ patient }: { patient: Patient }) {
           .is("deleted_at", null),
         supabase
           .from("medication_doses")
-          .select("medication_id, scheduled_at")
+          .select("id, medication_id, scheduled_at, taken_at, status")
           .eq("patient_id", pid)
           .gte("scheduled_at", startOfDay)
           .lt("scheduled_at", endOfDay),
