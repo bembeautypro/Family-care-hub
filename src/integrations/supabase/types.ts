@@ -97,7 +97,7 @@ export type Database = {
           notes: string | null
           parent_appointment_id: string | null
           patient_id: string | null
-          responsible_user_id: string | null
+          responsible_user_id: string
           scheduled_at: string
           specialty: string | null
           status: string
@@ -117,7 +117,7 @@ export type Database = {
           notes?: string | null
           parent_appointment_id?: string | null
           patient_id?: string | null
-          responsible_user_id?: string | null
+          responsible_user_id: string
           scheduled_at: string
           specialty?: string | null
           status: string
@@ -137,7 +137,7 @@ export type Database = {
           notes?: string | null
           parent_appointment_id?: string | null
           patient_id?: string | null
-          responsible_user_id?: string | null
+          responsible_user_id?: string
           scheduled_at?: string
           specialty?: string | null
           status?: string
@@ -540,6 +540,7 @@ export type Database = {
           medication_id: string
           patient_id: string
           scheduled_at: string
+          status: string
           taken_at: string
           taken_by: string | null
         }
@@ -549,6 +550,7 @@ export type Database = {
           medication_id: string
           patient_id: string
           scheduled_at: string
+          status?: string
           taken_at?: string
           taken_by?: string | null
         }
@@ -558,6 +560,7 @@ export type Database = {
           medication_id?: string
           patient_id?: string
           scheduled_at?: string
+          status?: string
           taken_at?: string
           taken_by?: string | null
         }
