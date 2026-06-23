@@ -674,3 +674,195 @@ function DocumentRow({ doc }: { doc: Document }) {
     </li>
   );
 }
+
+type DoseHistoryEntry = {
+  id: string;
+  scheduled_at: string;
+  taken_at: string;
+  status: DoseStatus;
+};
+
+function DoseHistorySheet({
+  open,
+  onOpenChange,
+  med,
+  onChange,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  med: Medication;
+  onChange: () => void | Promise<void>;
+}) {
+  const [entries, setEntries] = useState<DoseHistoryEntry[] | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setEntries(null);
+    const { data, error } = await supabase
+      .from("medication_doses")
+      .select("id, scheduled_at, taken_at, status")
+      .eq("medication_id", med.id)
+      .order("scheduled_at", { ascending: false })
+      .limit(60);
+    if (error) {
+      toast.error(error.message);
+      setEntries([]);
+      return;
+    }
+    setEntries((data ?? []) as DoseHistoryEntry[]);
+  }, [med.id]);
+
+  useEffect(() => {
+    if (open) void load();
+  }, [open, load]);
+
+  async function toggleStatus(entry: DoseHistoryEntry) {
+    setBusyId(entry.id);
+    const next: DoseStatus = entry.status === "taken" ? "skipped" : "taken";
+    const { error } = await supabase
+      .from("medication_doses")
+      .update({ status: next, taken_at: new Date().toISOString() })
+      .eq("id", entry.id);
+    setBusyId(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Registro atualizado.");
+    await load();
+    await onChange();
+  }
+
+  async function remove(entry: DoseHistoryEntry) {
+    setBusyId(entry.id);
+    const { error } = await supabase.from("medication_doses").delete().eq("id", entry.id);
+    setBusyId(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Registro desfeito.");
+    await load();
+    await onChange();
+  }
+
+  // Group by YYYY-MM-DD of scheduled_at
+  const groups = useMemo(() => {
+    const out = new Map<string, DoseHistoryEntry[]>();
+    for (const e of entries ?? []) {
+      const d = new Date(e.scheduled_at);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      const arr = out.get(key) ?? [];
+      arr.push(e);
+      out.set(key, arr);
+    }
+    return Array.from(out.entries());
+  }, [entries]);
+
+  const lastId = entries?.[0]?.id ?? null;
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto rounded-t-2xl">
+        <SheetHeader>
+          <SheetTitle className="text-left">{med.name}</SheetTitle>
+          <SheetDescription className="text-left">
+            Histórico de doses (últimos 60 registros)
+          </SheetDescription>
+        </SheetHeader>
+
+        {entries === null ? (
+          <div className="mt-4 space-y-2 pb-6">
+            <Skeleton className="h-14 w-full rounded-lg" />
+            <Skeleton className="h-14 w-full rounded-lg" />
+          </div>
+        ) : entries.length === 0 ? (
+          <p className="mt-6 pb-6 text-center text-sm text-muted-foreground">
+            Nenhuma dose registrada ainda.
+          </p>
+        ) : (
+          <div className="mt-4 space-y-4 pb-6">
+            {groups.map(([day, list]) => {
+              const label = new Date(day + "T00:00:00").toLocaleDateString("pt-BR", {
+                weekday: "short",
+                day: "2-digit",
+                month: "short",
+              });
+              return (
+                <div key={day}>
+                  <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    {label}
+                  </p>
+                  <ul className="space-y-2">
+                    {list.map((e) => {
+                      const sched = new Date(e.scheduled_at).toLocaleTimeString("pt-BR", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      });
+                      const taken = new Date(e.taken_at).toLocaleTimeString("pt-BR", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      });
+                      const isLast = e.id === lastId;
+                      return (
+                        <li
+                          key={e.id}
+                          className="flex items-center gap-3 rounded-lg border bg-background p-3"
+                        >
+                          <div
+                            className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                              e.status === "taken"
+                                ? "bg-emerald-100 text-emerald-700"
+                                : "bg-muted text-muted-foreground"
+                            }`}
+                          >
+                            {e.status === "taken" ? (
+                              <Check className="h-4 w-4" />
+                            ) : (
+                              <X className="h-4 w-4" />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium">
+                              {e.status === "taken" ? "Tomada" : "Não tomada"} · {sched}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Registrado às {taken}
+                            </p>
+                          </div>
+                          {isLast && (
+                            <div className="flex gap-1">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 px-2"
+                                onClick={() => toggleStatus(e)}
+                                disabled={busyId === e.id}
+                              >
+                                {e.status === "taken" ? "Marcar não tomada" : "Marcar tomada"}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0 text-destructive"
+                                onClick={() => remove(e)}
+                                disabled={busyId === e.id}
+                                aria-label="Desfazer registro"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </SheetContent>
+    </Sheet>
+  );
+}
