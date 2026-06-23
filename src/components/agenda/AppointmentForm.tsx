@@ -120,6 +120,10 @@ export function AppointmentForm({
       toast.error("Informe data e hora.");
       return;
     }
+    if (responsible === "__none__") {
+      toast.error("Selecione o responsável por acompanhar.");
+      return;
+    }
     await onSave({
       type,
       title: title.trim(),
@@ -129,7 +133,7 @@ export function AppointmentForm({
       map_url: mapUrl.trim(),
       doctor_name: doctor.trim(),
       specialty: specialty.trim(),
-      responsible_user_id: responsible === "__none__" ? null : responsible,
+      responsible_user_id: responsible,
       status,
       notes: notes.trim(),
     });
