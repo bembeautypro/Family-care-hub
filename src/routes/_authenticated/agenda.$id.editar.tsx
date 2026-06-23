@@ -66,7 +66,7 @@ function EditarCompromisso() {
         map_url: data.map_url ?? "",
         doctor_name: data.doctor_name ?? "",
         specialty: data.specialty ?? "",
-        responsible_user_id: data.responsible_user_id ?? null,
+        responsible_user_id: data.responsible_user_id ?? "__none__",
         status: (data.status as AppointmentStatus) ?? "scheduled",
         notes: data.notes ?? "",
       });

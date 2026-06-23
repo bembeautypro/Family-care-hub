@@ -32,7 +32,7 @@ export type AppointmentFormValues = {
   map_url: string;
   doctor_name: string;
   specialty: string;
-  responsible_user_id: string | null;
+  responsible_user_id: string;
   status: AppointmentStatus;
   notes: string;
 };
@@ -120,6 +120,10 @@ export function AppointmentForm({
       toast.error("Informe data e hora.");
       return;
     }
+    if (responsible === "__none__") {
+      toast.error("Selecione o responsável por acompanhar.");
+      return;
+    }
     await onSave({
       type,
       title: title.trim(),
@@ -129,7 +133,7 @@ export function AppointmentForm({
       map_url: mapUrl.trim(),
       doctor_name: doctor.trim(),
       specialty: specialty.trim(),
-      responsible_user_id: responsible === "__none__" ? null : responsible,
+      responsible_user_id: responsible,
       status,
       notes: notes.trim(),
     });
@@ -256,13 +260,12 @@ export function AppointmentForm({
       </div>
 
       <div className="space-y-2">
-        <Label>Responsável por acompanhar</Label>
+        <Label>Responsável por acompanhar *</Label>
         <Select value={responsible} onValueChange={setResponsible}>
           <SelectTrigger className="h-[52px]">
-            <SelectValue placeholder="Selecionar" />
+            <SelectValue placeholder="Selecionar familiar" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="__none__">Ninguém atribuído</SelectItem>
             {members.map((m) => (
               <SelectItem key={m.user_id} value={m.user_id}>
                 <span className="flex items-center gap-2">
