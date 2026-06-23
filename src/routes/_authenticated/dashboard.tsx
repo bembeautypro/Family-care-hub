@@ -494,25 +494,26 @@ function MedicationRow({
 }) {
   const times = med.schedule?.times ?? [];
   const [saving, setSaving] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const scheduled = useMemo(() => todayScheduledTimes(times), [times]);
-  const takenSet = useMemo(
-    () =>
-      new Set(
-        doses
-          .filter((d) => d.medication_id === med.id)
-          .map((d) => new Date(d.scheduled_at).getTime()),
-      ),
+  const dosesForMed = useMemo(
+    () => doses.filter((d) => d.medication_id === med.id),
     [doses, med.id],
   );
+  const statusByTime = useMemo(() => {
+    const map = new Map<number, DoseStatus>();
+    for (const d of dosesForMed) map.set(new Date(d.scheduled_at).getTime(), d.status);
+    return map;
+  }, [dosesForMed]);
 
   const now = Date.now();
-  // earliest dose that is not yet taken
-  const pending = scheduled.find((d) => !takenSet.has(d.getTime()));
+  const pending = scheduled.find((d) => !statusByTime.has(d.getTime()));
   const overdue = pending && pending.getTime() < now ? pending : null;
   const allDone = scheduled.length > 0 && !pending;
+  const skippedToday = scheduled.some((d) => statusByTime.get(d.getTime()) === "skipped");
 
-  async function markTaken() {
+  async function recordDose(status: DoseStatus) {
     if (!pending || saving) return;
     setSaving(true);
     const { data: u } = await supabase.auth.getUser();
@@ -525,6 +526,7 @@ function MedicationRow({
           scheduled_at: pending.toISOString(),
           taken_at: new Date().toISOString(),
           taken_by: u.user?.id ?? null,
+          status,
         },
         { onConflict: "medication_id,scheduled_at" },
       );
@@ -533,7 +535,7 @@ function MedicationRow({
       toast.error(error.message);
       return;
     }
-    toast.success("Tomada registrada.");
+    toast.success(status === "taken" ? "Tomada registrada." : "Marcado como não tomada.");
     await onChange();
   }
 
@@ -541,49 +543,85 @@ function MedicationRow({
     d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
   return (
-    <li className="flex items-center gap-3 rounded-lg border bg-background p-3">
-      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
-        <Pill className="h-4 w-4" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">
-          {med.name}
-          {med.dosage ? ` · ${med.dosage}` : ""}
-        </p>
-        <div className="mt-0.5 flex flex-wrap items-center gap-2">
-          <p className="text-xs text-muted-foreground">
-            {scheduled.length === 0
-              ? "Sem horário"
-              : pending
-                ? `Próxima: ${fmt(pending)}`
-                : "Todas as doses de hoje confirmadas"}
-          </p>
-          {overdue && (
-            <Badge variant="destructive" className="gap-1 text-[10px]">
-              <AlertCircle className="h-3 w-3" />
-              Atrasado
-            </Badge>
-          )}
-          {allDone && (
-            <Badge variant="secondary" className="gap-1 text-[10px]">
-              <Check className="h-3 w-3" />
-              OK
-            </Badge>
-          )}
+    <li className="rounded-lg border bg-background p-3">
+      <div className="flex items-start gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <Pill className="h-4 w-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <p className="truncate text-sm font-medium">
+              {med.name}
+              {med.dosage ? ` · ${med.dosage}` : ""}
+            </p>
+            <button
+              type="button"
+              onClick={() => setHistoryOpen(true)}
+              aria-label="Ver histórico"
+              className="-mr-1 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
+            >
+              <History className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="mt-0.5 flex flex-wrap items-center gap-2">
+            <p className="text-xs text-muted-foreground">
+              {scheduled.length === 0
+                ? "Sem horário"
+                : pending
+                  ? `Próxima: ${fmt(pending)}`
+                  : "Todas as doses de hoje confirmadas"}
+            </p>
+            {overdue && (
+              <Badge variant="destructive" className="gap-1 text-[10px]">
+                <AlertCircle className="h-3 w-3" />
+                Atrasado
+              </Badge>
+            )}
+            {allDone && !skippedToday && (
+              <Badge variant="secondary" className="gap-1 text-[10px]">
+                <Check className="h-3 w-3" />
+                OK
+              </Badge>
+            )}
+            {skippedToday && (
+              <Badge variant="outline" className="gap-1 text-[10px]">
+                <X className="h-3 w-3" />
+                Pulou dose
+              </Badge>
+            )}
+          </div>
         </div>
       </div>
       {pending && (
-        <Button
-          size="sm"
-          variant={overdue ? "destructive" : "default"}
-          className="h-9 shrink-0"
-          onClick={markTaken}
-          disabled={saving}
-        >
-          <Check className="mr-1 h-4 w-4" />
-          Tomei
-        </Button>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <Button
+            size="sm"
+            variant={overdue ? "destructive" : "default"}
+            className="h-9"
+            onClick={() => recordDose("taken")}
+            disabled={saving}
+          >
+            <Check className="mr-1 h-4 w-4" />
+            Tomei
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-9"
+            onClick={() => recordDose("skipped")}
+            disabled={saving}
+          >
+            <X className="mr-1 h-4 w-4" />
+            Não tomei
+          </Button>
+        </div>
       )}
+      <DoseHistorySheet
+        open={historyOpen}
+        onOpenChange={setHistoryOpen}
+        med={med}
+        onChange={onChange}
+      />
     </li>
   );
 }
