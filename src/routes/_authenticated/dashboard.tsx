@@ -1,5 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { Check, AlertCircle } from "lucide-react";
 import {
   AlertTriangle,
   ChevronRight,
@@ -57,6 +59,20 @@ type Document = {
 };
 type Allergy = { id: string; severity: string | null };
 type EmergencyContact = { id: string };
+type DoseRecord = { medication_id: string; scheduled_at: string };
+
+// Build today's scheduled datetimes for a med from its "HH:MM" times
+function todayScheduledTimes(times: string[] | undefined): Date[] {
+  if (!times?.length) return [];
+  const out: Date[] = [];
+  const now = new Date();
+  for (const t of times) {
+    const [h, m] = t.split(":").map(Number);
+    if (Number.isNaN(h) || Number.isNaN(m)) continue;
+    out.push(new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0, 0));
+  }
+  return out.sort((a, b) => a.getTime() - b.getTime());
+}
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -138,9 +154,24 @@ function PatientDashboard({ patient }: { patient: Patient }) {
   const [documents, setDocuments] = useState<Document[] | null>(null);
   const [allergies, setAllergies] = useState<Allergy[] | null>(null);
   const [contacts, setContacts] = useState<EmergencyContact[] | null>(null);
+  const [doses, setDoses] = useState<DoseRecord[] | null>(null);
+
+  const pid = patient.id;
+
+  const loadDoses = useCallback(async () => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
+    const { data } = await supabase
+      .from("medication_doses")
+      .select("medication_id, scheduled_at")
+      .eq("patient_id", pid)
+      .gte("scheduled_at", start)
+      .lt("scheduled_at", end);
+    setDoses((data ?? []) as DoseRecord[]);
+  }, [pid]);
 
   useEffect(() => {
-    const pid = patient.id;
     let cancelled = false;
     // reset state when patient changes so stale data does not flash
     setAppointments(null);
@@ -149,14 +180,16 @@ function PatientDashboard({ patient }: { patient: Patient }) {
     setDocuments(null);
     setAllergies(null);
     setContacts(null);
+    setDoses(null);
 
     const now = new Date();
     const in7 = new Date();
     in7.setDate(in7.getDate() + 7);
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
 
     (async () => {
-      const [a, m, e, d, al, ec] = await Promise.all([
+      const [a, m, e, d, al, ec, ds] = await Promise.all([
         supabase
           .from("appointments")
           .select("id, type, title, scheduled_at, responsible_user_id")
@@ -198,6 +231,12 @@ function PatientDashboard({ patient }: { patient: Patient }) {
           .select("id")
           .eq("patient_id", pid)
           .is("deleted_at", null),
+        supabase
+          .from("medication_doses")
+          .select("medication_id, scheduled_at")
+          .eq("patient_id", pid)
+          .gte("scheduled_at", startOfDay)
+          .lt("scheduled_at", endOfDay),
       ]);
       if (cancelled) return;
       setAppointments((a.data ?? []) as Appointment[]);
@@ -206,12 +245,13 @@ function PatientDashboard({ patient }: { patient: Patient }) {
       setDocuments((d.data ?? []) as Document[]);
       setAllergies((al.data ?? []) as Allergy[]);
       setContacts((ec.data ?? []) as EmergencyContact[]);
+      setDoses((ds.data ?? []) as DoseRecord[]);
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [patient.id]);
+  }, [pid]);
 
   const pendencies = useMemo(() => {
     const list: { label: string; to: string }[] = [];
@@ -267,7 +307,7 @@ function PatientDashboard({ patient }: { patient: Patient }) {
         ) : (
           <ul className="space-y-2">
             {medications.slice(0, 4).map((m) => (
-              <MedicationRow key={m.id} med={m} />
+              <MedicationRow key={m.id} med={m} patientId={pid} doses={doses ?? []} onChange={loadDoses} />
             ))}
           </ul>
         )}
@@ -434,8 +474,65 @@ function AppointmentRow({ appointment }: { appointment: Appointment }) {
   );
 }
 
-function MedicationRow({ med }: { med: Medication }) {
+function MedicationRow({
+  med,
+  patientId,
+  doses,
+  onChange,
+}: {
+  med: Medication;
+  patientId: string;
+  doses: DoseRecord[];
+  onChange: () => void | Promise<void>;
+}) {
   const times = med.schedule?.times ?? [];
+  const [saving, setSaving] = useState(false);
+
+  const scheduled = useMemo(() => todayScheduledTimes(times), [times]);
+  const takenSet = useMemo(
+    () =>
+      new Set(
+        doses
+          .filter((d) => d.medication_id === med.id)
+          .map((d) => new Date(d.scheduled_at).getTime()),
+      ),
+    [doses, med.id],
+  );
+
+  const now = Date.now();
+  // earliest dose that is not yet taken
+  const pending = scheduled.find((d) => !takenSet.has(d.getTime()));
+  const overdue = pending && pending.getTime() < now ? pending : null;
+  const allDone = scheduled.length > 0 && !pending;
+
+  async function markTaken() {
+    if (!pending || saving) return;
+    setSaving(true);
+    const { data: u } = await supabase.auth.getUser();
+    const { error } = await supabase
+      .from("medication_doses")
+      .upsert(
+        {
+          medication_id: med.id,
+          patient_id: patientId,
+          scheduled_at: pending.toISOString(),
+          taken_at: new Date().toISOString(),
+          taken_by: u.user?.id ?? null,
+        },
+        { onConflict: "medication_id,scheduled_at" },
+      );
+    setSaving(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Tomada registrada.");
+    await onChange();
+  }
+
+  const fmt = (d: Date) =>
+    d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
   return (
     <li className="flex items-center gap-3 rounded-lg border bg-background p-3">
       <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -446,10 +543,40 @@ function MedicationRow({ med }: { med: Medication }) {
           {med.name}
           {med.dosage ? ` · ${med.dosage}` : ""}
         </p>
-        <p className="text-xs text-muted-foreground">
-          {times.length > 0 ? times.join(" · ") : "Sem horário"}
-        </p>
+        <div className="mt-0.5 flex flex-wrap items-center gap-2">
+          <p className="text-xs text-muted-foreground">
+            {scheduled.length === 0
+              ? "Sem horário"
+              : pending
+                ? `Próxima: ${fmt(pending)}`
+                : "Todas as doses de hoje confirmadas"}
+          </p>
+          {overdue && (
+            <Badge variant="destructive" className="gap-1 text-[10px]">
+              <AlertCircle className="h-3 w-3" />
+              Atrasado
+            </Badge>
+          )}
+          {allDone && (
+            <Badge variant="secondary" className="gap-1 text-[10px]">
+              <Check className="h-3 w-3" />
+              OK
+            </Badge>
+          )}
+        </div>
       </div>
+      {pending && (
+        <Button
+          size="sm"
+          variant={overdue ? "destructive" : "default"}
+          className="h-9 shrink-0"
+          onClick={markTaken}
+          disabled={saving}
+        >
+          <Check className="mr-1 h-4 w-4" />
+          Tomei
+        </Button>
+      )}
     </li>
   );
 }
