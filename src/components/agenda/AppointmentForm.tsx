@@ -32,7 +32,7 @@ export type AppointmentFormValues = {
   map_url: string;
   doctor_name: string;
   specialty: string;
-  responsible_user_id: string | null;
+  responsible_user_id: string;
   status: AppointmentStatus;
   notes: string;
 };
