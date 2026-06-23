@@ -560,7 +560,7 @@ function MedicationRow({
               aria-label="Ver histórico"
               className="-mr-1 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
             >
-              <History className="h-4 w-4" />
+              <HistoryIcon className="h-4 w-4" />
             </button>
           </div>
           <div className="mt-0.5 flex flex-wrap items-center gap-2">
