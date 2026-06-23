@@ -157,7 +157,22 @@ function PatientDashboard({ patient }: { patient: Patient }) {
   const [doses, setDoses] = useState<DoseRecord[] | null>(null);
 
   useEffect(() => {
-    const pid = patient.id;
+  const pid = patient.id;
+
+  const loadDoses = useCallback(async () => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
+    const { data } = await supabase
+      .from("medication_doses")
+      .select("medication_id, scheduled_at")
+      .eq("patient_id", pid)
+      .gte("scheduled_at", start)
+      .lt("scheduled_at", end);
+    setDoses((data ?? []) as DoseRecord[]);
+  }, [pid]);
+
+  useEffect(() => {
     let cancelled = false;
     // reset state when patient changes so stale data does not flash
     setAppointments(null);
@@ -166,14 +181,16 @@ function PatientDashboard({ patient }: { patient: Patient }) {
     setDocuments(null);
     setAllergies(null);
     setContacts(null);
+    setDoses(null);
 
     const now = new Date();
     const in7 = new Date();
     in7.setDate(in7.getDate() + 7);
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
 
     (async () => {
-      const [a, m, e, d, al, ec] = await Promise.all([
+      const [a, m, e, d, al, ec, ds] = await Promise.all([
         supabase
           .from("appointments")
           .select("id, type, title, scheduled_at, responsible_user_id")
@@ -215,6 +232,12 @@ function PatientDashboard({ patient }: { patient: Patient }) {
           .select("id")
           .eq("patient_id", pid)
           .is("deleted_at", null),
+        supabase
+          .from("medication_doses")
+          .select("medication_id, scheduled_at")
+          .eq("patient_id", pid)
+          .gte("scheduled_at", startOfDay)
+          .lt("scheduled_at", endOfDay),
       ]);
       if (cancelled) return;
       setAppointments((a.data ?? []) as Appointment[]);
@@ -223,12 +246,13 @@ function PatientDashboard({ patient }: { patient: Patient }) {
       setDocuments((d.data ?? []) as Document[]);
       setAllergies((al.data ?? []) as Allergy[]);
       setContacts((ec.data ?? []) as EmergencyContact[]);
+      setDoses((ds.data ?? []) as DoseRecord[]);
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [patient.id]);
+  }, [pid]);
 
   const pendencies = useMemo(() => {
     const list: { label: string; to: string }[] = [];
