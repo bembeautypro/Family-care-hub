@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Check, AlertCircle } from "lucide-react";
+import { Check, AlertCircle, X, History as HistoryIcon, Trash2 } from "lucide-react";
 import {
   AlertTriangle,
   ChevronRight,
