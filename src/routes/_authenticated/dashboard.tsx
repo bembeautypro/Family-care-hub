@@ -59,7 +59,14 @@ type Document = {
 };
 type Allergy = { id: string; severity: string | null };
 type EmergencyContact = { id: string };
-type DoseRecord = { medication_id: string; scheduled_at: string };
+type DoseStatus = "taken" | "skipped";
+type DoseRecord = {
+  id: string;
+  medication_id: string;
+  scheduled_at: string;
+  taken_at: string;
+  status: DoseStatus;
+};
 
 // Build today's scheduled datetimes for a med from its "HH:MM" times
 function todayScheduledTimes(times: string[] | undefined): Date[] {
