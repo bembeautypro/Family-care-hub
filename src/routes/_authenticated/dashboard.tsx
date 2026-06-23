@@ -307,7 +307,7 @@ function PatientDashboard({ patient }: { patient: Patient }) {
         ) : (
           <ul className="space-y-2">
             {medications.slice(0, 4).map((m) => (
-              <MedicationRow key={m.id} med={m} />
+              <MedicationRow key={m.id} med={m} patientId={pid} doses={doses ?? []} onChange={loadDoses} />
             ))}
           </ul>
         )}
