@@ -156,7 +156,6 @@ function PatientDashboard({ patient }: { patient: Patient }) {
   const [contacts, setContacts] = useState<EmergencyContact[] | null>(null);
   const [doses, setDoses] = useState<DoseRecord[] | null>(null);
 
-  useEffect(() => {
   const pid = patient.id;
 
   const loadDoses = useCallback(async () => {
