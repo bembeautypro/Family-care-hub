@@ -59,6 +59,20 @@ type Document = {
 };
 type Allergy = { id: string; severity: string | null };
 type EmergencyContact = { id: string };
+type DoseRecord = { medication_id: string; scheduled_at: string };
+
+// Build today's scheduled datetimes for a med from its "HH:MM" times
+function todayScheduledTimes(times: string[] | undefined): Date[] {
+  if (!times?.length) return [];
+  const out: Date[] = [];
+  const now = new Date();
+  for (const t of times) {
+    const [h, m] = t.split(":").map(Number);
+    if (Number.isNaN(h) || Number.isNaN(m)) continue;
+    out.push(new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0, 0));
+  }
+  return out.sort((a, b) => a.getTime() - b.getTime());
+}
 
 function Dashboard() {
   const navigate = useNavigate();
