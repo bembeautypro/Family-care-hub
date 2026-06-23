@@ -260,13 +260,12 @@ export function AppointmentForm({
       </div>
 
       <div className="space-y-2">
-        <Label>Responsável por acompanhar</Label>
+        <Label>Responsável por acompanhar *</Label>
         <Select value={responsible} onValueChange={setResponsible}>
           <SelectTrigger className="h-[52px]">
-            <SelectValue placeholder="Selecionar" />
+            <SelectValue placeholder="Selecionar familiar" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="__none__">Ninguém atribuído</SelectItem>
             {members.map((m) => (
               <SelectItem key={m.user_id} value={m.user_id}>
                 <span className="flex items-center gap-2">
