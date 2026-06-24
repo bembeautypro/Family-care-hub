@@ -143,15 +143,11 @@ function DocumentosList() {
     }, 300);
   }
 
-  async function handleView(doc: Document) {
-    try {
-      const url = await getSignedMedicalDocUrl(doc.file_path, 3600);
-      window.open(url, "_blank", "noopener,noreferrer");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao abrir documento.");
-    }
+  function handleView(doc: Document) {
+    navigate({ to: `/documentos/${doc.id}` as never });
     setActionDoc(null);
   }
+
 
   async function softDelete(doc: Document) {
     const { data: u } = await supabase.auth.getUser();
