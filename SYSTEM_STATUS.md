@@ -15,10 +15,13 @@
 - Root sem `og:image` global.
 - `familia.functions.ts` sem `as string` — tipagem inferida + null-guards explícitos.
 - `PatientDashboard` migrado para React Query (7 `useQuery` keyed por `patientId`) com cancelamento via `abortSignal`.
+- Visualizador PDF inline em `documentos/$id` via `react-pdf` (worker pdfjs via CDN), com fallback `window.open`.
+- Manifest PWA + ícones 192/512 + apple-touch-icon: app instalável em Chrome mobile.
+- Realtime habilitado em `medications`, `appointments`, `medication_doses`; dashboard assina por `patient_id` e invalida queries.
 
-## Nota de Prontidão: **9.0/10**
+## Nota de Prontidão: **9.4/10**
 
-(P0-L1 + P1-L1 + P1-L2 + P2-L1 + P2-L2 + P2-L3 fechados.)
+(P0-L1 + P1-L1 + P1-L2 + P2-L1 + P2-L2 + P2-L3 + P4-L1 fechados.)
 
 ## Riscos Abertos
 
@@ -33,18 +36,21 @@ Nenhum.
 
 ### Dívida residual
 - `useEffect` redundante de `supabase.auth.getUser()` em rotas filhas.
-- `search_vector` aparece como `unknown` em `types.ts` (arquivo auto-gerado pelo Lovable Cloud — não editável). Sem impacto em runtime: `textSearch("search_vector", ...)` recebe o nome da coluna como string literal e funciona normalmente.
+- `search_vector` aparece como `unknown` em `types.ts` (auto-gerado).
+- PWA é manifest-only (sem service worker / offline) — conforme orientação do skill PWA da plataforma: SW só quando offline for explicitamente solicitado.
 
-### Fechados neste lote (P2-L2)
-- ✅ **M6** — `PatientDashboard` refatorado para React Query: cada entidade (appointments, medications, events, documents, allergies, contacts, doses) virou `useQuery` com `queryKey: ['dashboard', kind, patientId]` e `.abortSignal(signal)`. Trocar paciente cancela queries em voo automaticamente. `MedicationRow` recebe `invalidateDoses` no lugar do `loadDoses` manual.
-- ✅ **B1** — já fechado em lote anterior (tokens semânticos em `agenda.ts`).
-- ✅ **B2** — já fechado em lote anterior (sem `og:image` global no root).
+### Fechados neste lote (P4-L1)
+- ✅ **P4-01** — `react-pdf@10` instalado. Nova rota `src/routes/_authenticated/documentos.$id.tsx` renderiza PDFs inline com paginação, imagens inline para mimes `image/*`, e fallback "Abrir externamente" para outros tipos ou falha de renderização. Lista de documentos navega para a rota em vez de `window.open`.
+- ✅ **P4-02** — `public/manifest.webmanifest` + `icon-192.png` / `icon-512.png` (maskable) / `apple-touch-icon.png`. Tags em `__root.tsx`: `manifest`, `theme-color`, `apple-mobile-web-app-*`. Sem service worker (skill PWA: SW só com pedido explícito de offline).
+- ✅ **P4-03** — Migration adiciona `medications`, `appointments`, `medication_doses` à publicação `supabase_realtime` com `REPLICA IDENTITY FULL`. Dashboard abre canal `dashboard:${pid}` em `useEffect` com cleanup via `supabase.removeChannel`, filtrando por `patient_id` e invalidando as queryKeys correspondentes.
 
 ### Itens não verificáveis sem operador
 - Cron pg_cron de purga de `access_logs` (>90d) — pendente em P3-L1.
 - Deploy real em Cloudflare Workers.
+- Lighthouse PWA score (precisa do app publicado).
 
 ## Última Atualização
 
-2026-06-24 — Etapa: **P2-L2 concluído** (M6). Próximo lote: **P3-L1** (cron LGPD) ou **P4-L1** (visualizador react-pdf, PWA, Realtime).
+2026-06-24 — Etapa: **P4-L1 concluído** (react-pdf, PWA manifest, Realtime). Pendente: **P3-L1** (cron LGPD).
+
 
