@@ -31,6 +31,7 @@ import { Route as AuthenticatedOnboardingEmergenciaRouteImport } from './routes/
 import { Route as AuthenticatedMedicamentosNovoRouteImport } from './routes/_authenticated/medicamentos.novo'
 import { Route as AuthenticatedEventosNovoRouteImport } from './routes/_authenticated/eventos.novo'
 import { Route as AuthenticatedDocumentosNovoRouteImport } from './routes/_authenticated/documentos.novo'
+import { Route as AuthenticatedDocumentosIdRouteImport } from './routes/_authenticated/documentos.$id'
 import { Route as AuthenticatedAgendaNovaRouteImport } from './routes/_authenticated/agenda.nova'
 import { Route as AuthenticatedMedicamentosIdEditarRouteImport } from './routes/_authenticated/medicamentos.$id.editar'
 import { Route as AuthenticatedEventosIdEditarRouteImport } from './routes/_authenticated/eventos.$id.editar'
@@ -155,6 +156,12 @@ const AuthenticatedDocumentosNovoRoute =
     path: '/documentos/novo',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDocumentosIdRoute =
+  AuthenticatedDocumentosIdRouteImport.update({
+    id: '/documentos/$id',
+    path: '/documentos/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAgendaNovaRoute = AuthenticatedAgendaNovaRouteImport.update({
   id: '/agenda/nova',
   path: '/agenda/nova',
@@ -191,6 +198,7 @@ export interface FileRoutesByFullPath {
   '/convite/$token': typeof ConviteTokenRoute
   '/e/$token': typeof ETokenRoute
   '/agenda/nova': typeof AuthenticatedAgendaNovaRoute
+  '/documentos/$id': typeof AuthenticatedDocumentosIdRoute
   '/documentos/novo': typeof AuthenticatedDocumentosNovoRoute
   '/eventos/novo': typeof AuthenticatedEventosNovoRoute
   '/medicamentos/novo': typeof AuthenticatedMedicamentosNovoRoute
@@ -218,6 +226,7 @@ export interface FileRoutesByTo {
   '/convite/$token': typeof ConviteTokenRoute
   '/e/$token': typeof ETokenRoute
   '/agenda/nova': typeof AuthenticatedAgendaNovaRoute
+  '/documentos/$id': typeof AuthenticatedDocumentosIdRoute
   '/documentos/novo': typeof AuthenticatedDocumentosNovoRoute
   '/eventos/novo': typeof AuthenticatedEventosNovoRoute
   '/medicamentos/novo': typeof AuthenticatedMedicamentosNovoRoute
@@ -247,6 +256,7 @@ export interface FileRoutesById {
   '/convite/$token': typeof ConviteTokenRoute
   '/e/$token': typeof ETokenRoute
   '/_authenticated/agenda/nova': typeof AuthenticatedAgendaNovaRoute
+  '/_authenticated/documentos/$id': typeof AuthenticatedDocumentosIdRoute
   '/_authenticated/documentos/novo': typeof AuthenticatedDocumentosNovoRoute
   '/_authenticated/eventos/novo': typeof AuthenticatedEventosNovoRoute
   '/_authenticated/medicamentos/novo': typeof AuthenticatedMedicamentosNovoRoute
@@ -276,6 +286,7 @@ export interface FileRouteTypes {
     | '/convite/$token'
     | '/e/$token'
     | '/agenda/nova'
+    | '/documentos/$id'
     | '/documentos/novo'
     | '/eventos/novo'
     | '/medicamentos/novo'
@@ -303,6 +314,7 @@ export interface FileRouteTypes {
     | '/convite/$token'
     | '/e/$token'
     | '/agenda/nova'
+    | '/documentos/$id'
     | '/documentos/novo'
     | '/eventos/novo'
     | '/medicamentos/novo'
@@ -331,6 +343,7 @@ export interface FileRouteTypes {
     | '/convite/$token'
     | '/e/$token'
     | '/_authenticated/agenda/nova'
+    | '/_authenticated/documentos/$id'
     | '/_authenticated/documentos/novo'
     | '/_authenticated/eventos/novo'
     | '/_authenticated/medicamentos/novo'
@@ -512,6 +525,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDocumentosNovoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/documentos/$id': {
+      id: '/_authenticated/documentos/$id'
+      path: '/documentos/$id'
+      fullPath: '/documentos/$id'
+      preLoaderRoute: typeof AuthenticatedDocumentosIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/agenda/nova': {
       id: '/_authenticated/agenda/nova'
       path: '/agenda/nova'
@@ -550,6 +570,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
   AuthenticatedPerfilRoute: typeof AuthenticatedPerfilRoute
   AuthenticatedAgendaNovaRoute: typeof AuthenticatedAgendaNovaRoute
+  AuthenticatedDocumentosIdRoute: typeof AuthenticatedDocumentosIdRoute
   AuthenticatedDocumentosNovoRoute: typeof AuthenticatedDocumentosNovoRoute
   AuthenticatedEventosNovoRoute: typeof AuthenticatedEventosNovoRoute
   AuthenticatedMedicamentosNovoRoute: typeof AuthenticatedMedicamentosNovoRoute
@@ -573,6 +594,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
   AuthenticatedPerfilRoute: AuthenticatedPerfilRoute,
   AuthenticatedAgendaNovaRoute: AuthenticatedAgendaNovaRoute,
+  AuthenticatedDocumentosIdRoute: AuthenticatedDocumentosIdRoute,
   AuthenticatedDocumentosNovoRoute: AuthenticatedDocumentosNovoRoute,
   AuthenticatedEventosNovoRoute: AuthenticatedEventosNovoRoute,
   AuthenticatedMedicamentosNovoRoute: AuthenticatedMedicamentosNovoRoute,

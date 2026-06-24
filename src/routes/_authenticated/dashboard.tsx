@@ -292,6 +292,32 @@ function PatientDashboard({ patient }: { patient: Patient }) {
     queryClient.invalidateQueries({ queryKey: ["dashboard", "doses", pid] });
   }, [queryClient, pid]);
 
+  // Realtime: invalidate dashboard queries when remote rows change for this patient
+  useEffect(() => {
+    const channel = supabase
+      .channel(`dashboard:${pid}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "medications", filter: `patient_id=eq.${pid}` },
+        () => queryClient.invalidateQueries({ queryKey: ["dashboard", "medications", pid] }),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "appointments", filter: `patient_id=eq.${pid}` },
+        () => queryClient.invalidateQueries({ queryKey: ["dashboard", "appointments", pid] }),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "medication_doses", filter: `patient_id=eq.${pid}` },
+        () => queryClient.invalidateQueries({ queryKey: ["dashboard", "doses", pid] }),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [pid, queryClient]);
+
+
   const pendencies = useMemo(() => {
     const list: { label: string; to: string }[] = [];
     if (contacts && contacts.length === 0) {
