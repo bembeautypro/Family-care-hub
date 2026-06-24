@@ -378,7 +378,7 @@ function PatientDashboard({ patient }: { patient: Patient }) {
 
       {/* Bloco 5 */}
       <Section title="Últimos eventos" linkTo="/historico" linkLabel="Ver histórico completo">
-        {events === null ? (
+        {events === undefined ? (
           <Skeleton className="h-20 w-full" />
         ) : events.length === 0 ? (
           <p className="text-sm text-muted-foreground">Nenhum evento registrado ainda.</p>
@@ -393,7 +393,8 @@ function PatientDashboard({ patient }: { patient: Patient }) {
 
       {/* Bloco 6 */}
       <Section title="Documentos recentes" linkTo="/documentos" linkLabel="Ver todos os documentos">
-        {documents === null ? (
+        {documents === undefined ? (
+
           <Skeleton className="h-20 w-full" />
         ) : documents.length === 0 ? (
           <EmptyRow text="Nenhum documento ainda" ctaTo="/documentos/novo" ctaLabel="Subir documento" />
