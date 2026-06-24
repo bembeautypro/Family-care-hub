@@ -158,110 +158,139 @@ function DashboardSkeleton() {
 }
 
 function PatientDashboard({ patient }: { patient: Patient }) {
-  const [appointments, setAppointments] = useState<Appointment[] | null>(null);
-  const [medications, setMedications] = useState<Medication[] | null>(null);
-  const [events, setEvents] = useState<ClinicalEvent[] | null>(null);
-  const [documents, setDocuments] = useState<Document[] | null>(null);
-  const [allergies, setAllergies] = useState<Allergy[] | null>(null);
-  const [contacts, setContacts] = useState<EmergencyContact[] | null>(null);
-  const [doses, setDoses] = useState<DoseRecord[] | null>(null);
-
   const pid = patient.id;
+  const queryClient = useQueryClient();
 
-  const loadDoses = useCallback(async () => {
+  const todayRange = useMemo(() => {
     const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
-    const { data } = await supabase
-      .from("medication_doses")
-      .select("id, medication_id, scheduled_at, taken_at, status")
-      .eq("patient_id", pid)
-      .gte("scheduled_at", start)
-      .lt("scheduled_at", end);
-    setDoses((data ?? []) as DoseRecord[]);
-  }, [pid]);
-
-  useEffect(() => {
-    let cancelled = false;
-    // reset state when patient changes so stale data does not flash
-    setAppointments(null);
-    setMedications(null);
-    setEvents(null);
-    setDocuments(null);
-    setAllergies(null);
-    setContacts(null);
-    setDoses(null);
-
-    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     const in7 = new Date();
     in7.setDate(in7.getDate() + 7);
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
+    return { start: start.toISOString(), end: end.toISOString(), in7: in7.toISOString() };
+  }, []);
 
-    (async () => {
-      const [a, m, e, d, al, ec, ds] = await Promise.all([
-        supabase
-          .from("appointments")
-          .select("id, type, title, scheduled_at, responsible_user_id")
-          .eq("patient_id", pid)
-          .is("deleted_at", null)
-          .gte("scheduled_at", startOfDay)
-          .lte("scheduled_at", in7.toISOString())
-          .order("scheduled_at", { ascending: true })
-          .limit(10),
-        supabase
-          .from("medications")
-          .select("id, name, dosage, schedule")
-          .eq("patient_id", pid)
-          .eq("status", "active")
-          .is("deleted_at", null)
-          .order("name", { ascending: true })
-          .limit(20),
-        supabase
-          .from("clinical_events")
-          .select("id, event_date, type, title, severity")
-          .eq("patient_id", pid)
-          .is("deleted_at", null)
-          .order("event_date", { ascending: false })
-          .limit(3),
-        supabase
-          .from("documents")
-          .select("id, type, title, document_date, created_at")
-          .eq("patient_id", pid)
-          .is("deleted_at", null)
-          .order("created_at", { ascending: false })
-          .limit(3),
-        supabase
-          .from("patient_allergies")
-          .select("id, severity")
-          .eq("patient_id", pid)
-          .is("deleted_at", null),
-        supabase
-          .from("emergency_contacts")
-          .select("id")
-          .eq("patient_id", pid)
-          .is("deleted_at", null),
-        supabase
-          .from("medication_doses")
-          .select("id, medication_id, scheduled_at, taken_at, status")
-          .eq("patient_id", pid)
-          .gte("scheduled_at", startOfDay)
-          .lt("scheduled_at", endOfDay),
-      ]);
-      if (cancelled) return;
-      setAppointments((a.data ?? []) as Appointment[]);
-      setMedications((m.data ?? []) as Medication[]);
-      setEvents((e.data ?? []) as ClinicalEvent[]);
-      setDocuments((d.data ?? []) as Document[]);
-      setAllergies((al.data ?? []) as Allergy[]);
-      setContacts((ec.data ?? []) as EmergencyContact[]);
-      setDoses((ds.data ?? []) as DoseRecord[]);
-    })();
+  const appointmentsQ = useQuery({
+    queryKey: ["dashboard", "appointments", pid],
+    queryFn: async ({ signal }) => {
+      const { data, error } = await supabase
+        .from("appointments")
+        .select("id, type, title, scheduled_at, responsible_user_id")
+        .eq("patient_id", pid)
+        .is("deleted_at", null)
+        .gte("scheduled_at", todayRange.start)
+        .lte("scheduled_at", todayRange.in7)
+        .order("scheduled_at", { ascending: true })
+        .limit(10)
+        .abortSignal(signal);
+      if (error) throw error;
+      return (data ?? []) as Appointment[];
+    },
+  });
 
-    return () => {
-      cancelled = true;
-    };
-  }, [pid]);
+  const medicationsQ = useQuery({
+    queryKey: ["dashboard", "medications", pid],
+    queryFn: async ({ signal }) => {
+      const { data, error } = await supabase
+        .from("medications")
+        .select("id, name, dosage, schedule")
+        .eq("patient_id", pid)
+        .eq("status", "active")
+        .is("deleted_at", null)
+        .order("name", { ascending: true })
+        .limit(20)
+        .abortSignal(signal);
+      if (error) throw error;
+      return (data ?? []) as Medication[];
+    },
+  });
+
+  const eventsQ = useQuery({
+    queryKey: ["dashboard", "events", pid],
+    queryFn: async ({ signal }) => {
+      const { data, error } = await supabase
+        .from("clinical_events")
+        .select("id, event_date, type, title, severity")
+        .eq("patient_id", pid)
+        .is("deleted_at", null)
+        .order("event_date", { ascending: false })
+        .limit(3)
+        .abortSignal(signal);
+      if (error) throw error;
+      return (data ?? []) as ClinicalEvent[];
+    },
+  });
+
+  const documentsQ = useQuery({
+    queryKey: ["dashboard", "documents", pid],
+    queryFn: async ({ signal }) => {
+      const { data, error } = await supabase
+        .from("documents")
+        .select("id, type, title, document_date, created_at")
+        .eq("patient_id", pid)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false })
+        .limit(3)
+        .abortSignal(signal);
+      if (error) throw error;
+      return (data ?? []) as Document[];
+    },
+  });
+
+  const allergiesQ = useQuery({
+    queryKey: ["dashboard", "allergies", pid],
+    queryFn: async ({ signal }) => {
+      const { data, error } = await supabase
+        .from("patient_allergies")
+        .select("id, severity")
+        .eq("patient_id", pid)
+        .is("deleted_at", null)
+        .abortSignal(signal);
+      if (error) throw error;
+      return (data ?? []) as Allergy[];
+    },
+  });
+
+  const contactsQ = useQuery({
+    queryKey: ["dashboard", "contacts", pid],
+    queryFn: async ({ signal }) => {
+      const { data, error } = await supabase
+        .from("emergency_contacts")
+        .select("id")
+        .eq("patient_id", pid)
+        .is("deleted_at", null)
+        .abortSignal(signal);
+      if (error) throw error;
+      return (data ?? []) as EmergencyContact[];
+    },
+  });
+
+  const dosesQ = useQuery({
+    queryKey: ["dashboard", "doses", pid, todayRange.start],
+    queryFn: async ({ signal }) => {
+      const { data, error } = await supabase
+        .from("medication_doses")
+        .select("id, medication_id, scheduled_at, taken_at, status")
+        .eq("patient_id", pid)
+        .gte("scheduled_at", todayRange.start)
+        .lt("scheduled_at", todayRange.end)
+        .abortSignal(signal);
+      if (error) throw error;
+      return (data ?? []) as DoseRecord[];
+    },
+  });
+
+  const appointments = appointmentsQ.data;
+  const medications = medicationsQ.data;
+  const events = eventsQ.data;
+  const documents = documentsQ.data;
+  const allergies = allergiesQ.data;
+  const contacts = contactsQ.data;
+  const doses = dosesQ.data;
+
+  const invalidateDoses = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["dashboard", "doses", pid] });
+  }, [queryClient, pid]);
 
   const pendencies = useMemo(() => {
     const list: { label: string; to: string }[] = [];
@@ -295,7 +324,7 @@ function PatientDashboard({ patient }: { patient: Patient }) {
 
       {/* Bloco 2 */}
       <Section title="Próximos compromissos" linkTo="/agenda" linkLabel="Ver todos">
-        {appointments === null ? (
+        {appointments === undefined ? (
           <Skeleton className="h-20 w-full" />
         ) : appointments.length === 0 ? (
           <EmptyRow text="Nenhum compromisso agendado" ctaTo="/agenda/nova" ctaLabel="Agendar consulta" />
@@ -310,18 +339,19 @@ function PatientDashboard({ patient }: { patient: Patient }) {
 
       {/* Bloco 3 */}
       <Section title="Medicamentos ativos" linkTo="/medicamentos" linkLabel="Ver todos">
-        {medications === null ? (
+        {medications === undefined ? (
           <Skeleton className="h-20 w-full" />
         ) : medications.length === 0 ? (
           <EmptyRow text="Nenhum medicamento cadastrado" ctaTo="/medicamentos/novo" ctaLabel="Adicionar" />
         ) : (
           <ul className="space-y-2">
             {medications.slice(0, 4).map((m) => (
-              <MedicationRow key={m.id} med={m} patientId={pid} doses={doses ?? []} onChange={loadDoses} />
+              <MedicationRow key={m.id} med={m} patientId={pid} doses={doses ?? []} onChange={invalidateDoses} />
             ))}
           </ul>
         )}
       </Section>
+
 
       {/* Bloco 4 */}
       {pendencies.length > 0 && (
