@@ -14,10 +14,11 @@
 - Status de agendamento usando tokens semânticos.
 - Root sem `og:image` global.
 - `familia.functions.ts` sem `as string` — tipagem inferida + null-guards explícitos.
+- `PatientDashboard` migrado para React Query (7 `useQuery` keyed por `patientId`) com cancelamento via `abortSignal`.
 
-## Nota de Prontidão: **8.8/10**
+## Nota de Prontidão: **9.0/10**
 
-(P0-L1 + P1-L1 + P1-L2 + P2-L1 + P2-L3 fechados.)
+(P0-L1 + P1-L1 + P1-L2 + P2-L1 + P2-L2 + P2-L3 fechados.)
 
 ## Riscos Abertos
 
@@ -25,7 +26,7 @@
 Nenhum.
 
 ### MÉDIO
-- **M6** — `PatientDashboard` com 6 `useState`; refator React Query pendente (P2-L2).
+Nenhum.
 
 ### BAIXO
 Nenhum.
@@ -34,9 +35,10 @@ Nenhum.
 - `useEffect` redundante de `supabase.auth.getUser()` em rotas filhas.
 - `search_vector` aparece como `unknown` em `types.ts` (arquivo auto-gerado pelo Lovable Cloud — não editável). Sem impacto em runtime: `textSearch("search_vector", ...)` recebe o nome da coluna como string literal e funciona normalmente.
 
-### Fechados neste lote (P2-L3)
-- ✅ **B3** — Removidos 13 `as string` em `familia.functions.ts`. Adicionados null-guards para `inv.family_id/role/invited_by/id` em `acceptInvitation` e para `targetMember.family_id` em `changeMemberRole`/`removeMember`.
-- ✅ **B4** — Classificado como dívida documentada (tipo auto-gerado, sem impacto funcional). Ver Dívida residual.
+### Fechados neste lote (P2-L2)
+- ✅ **M6** — `PatientDashboard` refatorado para React Query: cada entidade (appointments, medications, events, documents, allergies, contacts, doses) virou `useQuery` com `queryKey: ['dashboard', kind, patientId]` e `.abortSignal(signal)`. Trocar paciente cancela queries em voo automaticamente. `MedicationRow` recebe `invalidateDoses` no lugar do `loadDoses` manual.
+- ✅ **B1** — já fechado em lote anterior (tokens semânticos em `agenda.ts`).
+- ✅ **B2** — já fechado em lote anterior (sem `og:image` global no root).
 
 ### Itens não verificáveis sem operador
 - Cron pg_cron de purga de `access_logs` (>90d) — pendente em P3-L1.
@@ -44,4 +46,5 @@ Nenhum.
 
 ## Última Atualização
 
-2026-06-18 — Etapa: **P2-L3 concluído** (B3, B4). Próximo lote: **P2-L2** (M6 React Query refactor) ou avançar para P3.
+2026-06-24 — Etapa: **P2-L2 concluído** (M6). Próximo lote: **P3-L1** (cron LGPD) ou **P4-L1** (visualizador react-pdf, PWA, Realtime).
+
