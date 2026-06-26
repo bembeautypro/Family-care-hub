@@ -16,6 +16,7 @@ export const createFamilyWithAdmin = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => createFamilySchema.parse(input))
   .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { userId } = context;
 
     const { data: family, error: famErr } = await supabaseAdmin

@@ -18,6 +18,7 @@ export const generateInviteLink = createServerFn({ method: "POST" })
       .parse(input)
   )
   .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { userId } = context;
 
     // Verify caller is admin of this family
@@ -65,6 +66,7 @@ export const acceptInvitation = createServerFn({ method: "POST" })
       .parse(input)
   )
   .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { userId } = context;
 
     // Fetch invitation
@@ -144,6 +146,7 @@ export const changeMemberRole = createServerFn({ method: "POST" })
       .parse(input)
   )
   .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { userId } = context;
 
     // Fetch the target member to get family_id
@@ -211,6 +214,7 @@ export const removeMember = createServerFn({ method: "POST" })
       .parse(input)
   )
   .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { userId } = context;
 
     // Fetch the target member

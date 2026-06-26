@@ -17,6 +17,7 @@ const SIGNED_URL_TTL_SECONDS = 300; // P0-03 (M2): was 3600
 export const logEmergencyAccess = createServerFn({ method: "POST" })
   .inputValidator((input) => logEmergencyAccessSchema.parse(input))
   .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { token, ip_address, user_agent } = data;
 
     // 0. Rate-limit per IP (P0-02 / M1)
