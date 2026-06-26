@@ -2,7 +2,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 // Atualiza nome e telefone do perfil do usuário autenticado
 export const updateProfile = createServerFn({ method: "POST" })
@@ -16,6 +15,7 @@ export const updateProfile = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("profiles")
       .update({
@@ -35,6 +35,7 @@ export const updateProfile = createServerFn({ method: "POST" })
 export const deleteAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // Busca todas as famílias onde o usuário é admin ativo
     const { data: adminMemberships, error: fetchErr } = await supabaseAdmin
       .from("family_members")

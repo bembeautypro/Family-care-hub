@@ -94,9 +94,10 @@ function Dashboard() {
     (async () => {
       const { data } = await supabase.auth.getUser();
       if (!data.user) {
-        navigate({ to: "/auth/login" });
+        // Auth gate handled by _authenticated/route.tsx; nothing to do here.
         return;
       }
+
       const { data: p } = await supabase
         .from("profiles")
         .select("full_name, photo_url, onboarding_step")
