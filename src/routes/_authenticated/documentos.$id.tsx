@@ -1,9 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight, Download, ExternalLink } from "lucide-react";
-import { Document as PdfDocument, Page as PdfPage, pdfjs } from "react-pdf";
-import "react-pdf/dist/Page/AnnotationLayer.css";
-import "react-pdf/dist/Page/TextLayer.css";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { ArrowLeft, Download, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -13,10 +10,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { BottomNav } from "@/components/layout/BottomNav";
 
-// PDF.js worker via CDN (matches react-pdf bundled pdfjs version)
-pdfjs.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+// react-pdf depends on pdfjs which references DOMMatrix (browser-only).
+// Disable SSR for this route and lazy-load the viewer to keep pdfjs out of the
+// server bundle entirely.
+const PdfViewer = lazy(() => import("@/components/documents/PdfViewer"));
 
 export const Route = createFileRoute("/_authenticated/documentos/$id")({
+  ssr: false,
   head: () => ({ meta: [{ title: "Documento — Amparo" }] }),
   component: DocumentViewer,
 });
@@ -35,19 +35,6 @@ function DocumentViewer() {
   const [doc, setDoc] = useState<DocumentRow | null>(null);
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [numPages, setNumPages] = useState<number | null>(null);
-  const [pageNumber, setPageNumber] = useState(1);
-  const [pageWidth, setPageWidth] = useState<number>(360);
-
-  useEffect(() => {
-    function updateWidth() {
-      const w = Math.min(window.innerWidth - 40, 720);
-      setPageWidth(w);
-    }
-    updateWidth();
-    window.addEventListener("resize", updateWidth);
-    return () => window.removeEventListener("resize", updateWidth);
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -70,7 +57,9 @@ function DocumentViewer() {
         if (!cancelled) setSignedUrl(url);
       } catch (err) {
         if (!cancelled) {
-          setLoadError(err instanceof Error ? err.message : "Erro ao gerar URL do arquivo.");
+          const msg = err instanceof Error ? err.message : "Erro ao gerar URL do arquivo.";
+          setLoadError(msg);
+          toast.error(msg);
         }
       }
     })();
@@ -133,61 +122,9 @@ function DocumentViewer() {
         ) : !signedUrl ? (
           <Skeleton className="h-96 w-full rounded-2xl" />
         ) : isPdf ? (
-          <div className="rounded-2xl border bg-card p-3">
-            <PdfDocument
-              file={signedUrl}
-              onLoadSuccess={({ numPages }) => {
-                setNumPages(numPages);
-                setPageNumber(1);
-              }}
-              onLoadError={(err) => setLoadError(err.message)}
-              loading={<Skeleton className="h-96 w-full rounded-xl" />}
-              error={
-                <div className="p-6 text-center text-sm text-muted-foreground">
-                  Não foi possível renderizar este PDF.
-                  <Button
-                    variant="link"
-                    onClick={openExternal}
-                    className="ml-1 h-auto p-0 align-baseline"
-                  >
-                    Abrir externamente
-                  </Button>
-                </div>
-              }
-            >
-              <PdfPage
-                pageNumber={pageNumber}
-                width={pageWidth}
-                renderTextLayer={false}
-                renderAnnotationLayer={false}
-              />
-            </PdfDocument>
-            {numPages && numPages > 1 && (
-              <div className="mt-3 flex items-center justify-between gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={pageNumber <= 1}
-                  onClick={() => setPageNumber((p) => Math.max(1, p - 1))}
-                >
-                  <ChevronLeft className="mr-1 h-4 w-4" />
-                  Anterior
-                </Button>
-                <span className="text-xs text-muted-foreground">
-                  Página {pageNumber} de {numPages}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={pageNumber >= numPages}
-                  onClick={() => setPageNumber((p) => Math.min(numPages, p + 1))}
-                >
-                  Próxima
-                  <ChevronRight className="ml-1 h-4 w-4" />
-                </Button>
-              </div>
-            )}
-          </div>
+          <Suspense fallback={<Skeleton className="h-96 w-full rounded-2xl" />}>
+            <PdfViewer url={signedUrl} onOpenExternal={openExternal} />
+          </Suspense>
         ) : isImage ? (
           <div className="rounded-2xl border bg-card p-3">
             <img
