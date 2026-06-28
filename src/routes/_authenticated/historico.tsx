@@ -71,10 +71,9 @@ function HistoricoPage() {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) navigate({ to: "/auth/login" });
-      else setUserId(data.user.id);
+      if (data.user) setUserId(data.user.id);
     });
-  }, [navigate]);
+  }, []);
 
   const load = useCallback(async () => {
     if (!active) return;

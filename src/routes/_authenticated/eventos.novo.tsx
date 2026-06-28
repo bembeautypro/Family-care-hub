@@ -27,11 +27,6 @@ function NovoEvento() {
   const [initial, setInitial] = useState<ClinicalEventInitial | null>(null);
   const [loadingInitial, setLoadingInitial] = useState(!!appointment);
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) navigate({ to: "/auth/login" });
-    });
-  }, [navigate]);
 
   useEffect(() => {
     if (!appointment) return;

@@ -18,11 +18,6 @@ function NovoMedicamento() {
   const [saving, setSaving] = useState(false);
   const [medId, setMedId] = useState<string | undefined>();
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) navigate({ to: "/auth/login" });
-    });
-  }, [navigate]);
 
   return (
     <main className="min-h-screen bg-background px-5 pb-24 pt-6">

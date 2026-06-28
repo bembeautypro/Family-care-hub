@@ -38,7 +38,6 @@
 Nenhum.
 
 ### Dívida residual (aceita)
-- `useEffect` redundante de `supabase.auth.getUser()` em algumas rotas filhas (gate `_authenticated/` já cobre).
 - `search_vector` como `unknown` em `types.ts` (auto-gerado, inofensivo em runtime).
 - PWA manifest-only (sem service worker / offline) — política da plataforma.
 
@@ -49,4 +48,4 @@ Nenhum.
 
 ## Última Atualização
 
-2026-06-25 — **Roadmap 100% concluído.** P3-L1 fechado (cron LGPD + cleanup rate-limits). Auditoria geral sem riscos abertos.
+2026-06-28 — Limpeza de redirects redundantes em 17 rotas filhas de `_authenticated/` (gate único cobre). Mantidos apenas redirects pós-`signOut` em `perfil.tsx`. Build + typecheck ✅. **Nota: 9.0/10**.

@@ -80,7 +80,7 @@ function PerfilPage() {
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) {
-        navigate({ to: "/auth/login" });
+        // gate em _authenticated/route.tsx garante usuário
         return;
       }
       setUserId(data.user.id);

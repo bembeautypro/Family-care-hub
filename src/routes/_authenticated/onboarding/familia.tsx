@@ -37,11 +37,6 @@ function Familia() {
     { name: "", role: "filho" },
   );
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) navigate({ to: "/auth/login" });
-    });
-  }, [navigate]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();

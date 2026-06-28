@@ -25,11 +25,6 @@ function NovoCompromisso() {
   const [saving, setSaving] = useState(false);
   const [parentTitle, setParentTitle] = useState<string | null>(null);
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) navigate({ to: "/auth/login" });
-    });
-  }, [navigate]);
 
   useEffect(() => {
     if (!parent) {

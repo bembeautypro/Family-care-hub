@@ -89,7 +89,7 @@ function EmergenciaPage() {
     (async () => {
       const { data } = await supabase.auth.getUser();
       if (!data.user) {
-        navigate({ to: "/auth/login" });
+        // gate em _authenticated/route.tsx garante usuário
         return;
       }
       const { data: p } = await supabase

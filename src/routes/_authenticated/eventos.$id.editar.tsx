@@ -21,11 +21,6 @@ function EditarEvento() {
   const [patientId, setPatientId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) navigate({ to: "/auth/login" });
-    });
-  }, [navigate]);
 
   useEffect(() => {
     (async () => {

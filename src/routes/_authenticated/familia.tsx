@@ -151,7 +151,7 @@ function FamiliaPage() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (!data.user) {
-        navigate({ to: "/auth/login" });
+        // gate em _authenticated/route.tsx garante usuário
         return;
       }
       setCurrentUserId(data.user.id);
