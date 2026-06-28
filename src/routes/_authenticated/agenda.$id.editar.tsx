@@ -27,7 +27,7 @@ function EditarCompromisso() {
     (async () => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) {
-        navigate({ to: "/auth/login" });
+        // gate em _authenticated/route.tsx garante usuário
         return;
       }
       const { data, error } = await supabase

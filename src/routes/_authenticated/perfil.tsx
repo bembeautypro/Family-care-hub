@@ -80,7 +80,7 @@ function PerfilPage() {
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) {
-        navigate({ to: "/auth/login" });
+        // gate em _authenticated/route.tsx garante usuário
         return;
       }
       setUserId(data.user.id);
@@ -163,7 +163,7 @@ function PerfilPage() {
 
   async function handleSignOut() {
     await supabase.auth.signOut();
-    navigate({ to: "/auth/login" });
+    // gate em _authenticated/route.tsx garante usuário
   }
 
   async function handleDeleteAccount() {
@@ -177,7 +177,7 @@ function PerfilPage() {
     try {
       await doDeleteAccount({});
       await supabase.auth.signOut();
-      navigate({ to: "/auth/login" });
+      // gate em _authenticated/route.tsx garante usuário
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erro ao excluir conta";
       if (msg === "SOLO_ADMIN") {
