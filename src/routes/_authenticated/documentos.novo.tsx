@@ -102,11 +102,6 @@ function NovoDocumento() {
   // Drop state for desktop
   const [dragging, setDragging] = useState(false);
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) navigate({ to: "/auth/login" });
-    });
-  }, [navigate]);
 
   // Revoke previous object URL when file changes
   useEffect(() => {

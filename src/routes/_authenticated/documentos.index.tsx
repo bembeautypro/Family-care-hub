@@ -96,11 +96,6 @@ function DocumentosList() {
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) navigate({ to: "/auth/login" });
-    });
-  }, [navigate]);
 
   async function load(query: string) {
     if (!active) return;

@@ -52,11 +52,6 @@ function Emergencia() {
   const [insurance, setInsurance] = useState({ name: "", number: "" });
   const [contact, setContact] = useState({ name: "", rel: "", phone: "" });
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) navigate({ to: "/auth/login" });
-    });
-  }, [navigate]);
 
   async function getPatientId(): Promise<{ patientId: string; userId: string }> {
     const { data: userData } = await supabase.auth.getUser();

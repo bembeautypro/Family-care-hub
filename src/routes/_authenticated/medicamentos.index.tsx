@@ -59,11 +59,6 @@ function MedicamentosList() {
   const [actionMed, setActionMed] = useState<Medication | null>(null);
   const [toRemove, setToRemove] = useState<Medication | null>(null);
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) navigate({ to: "/auth/login" });
-    });
-  }, [navigate]);
 
   async function load() {
     if (!active) return;
