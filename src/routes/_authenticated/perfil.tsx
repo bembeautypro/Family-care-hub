@@ -163,7 +163,7 @@ function PerfilPage() {
 
   async function handleSignOut() {
     await supabase.auth.signOut();
-    // gate em _authenticated/route.tsx garante usuário
+    navigate({ to: "/auth/login" });
   }
 
   async function handleDeleteAccount() {
@@ -177,7 +177,7 @@ function PerfilPage() {
     try {
       await doDeleteAccount({});
       await supabase.auth.signOut();
-      // gate em _authenticated/route.tsx garante usuário
+      navigate({ to: "/auth/login" });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erro ao excluir conta";
       if (msg === "SOLO_ADMIN") {
