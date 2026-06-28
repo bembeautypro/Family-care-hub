@@ -71,10 +71,9 @@ function HistoricoPage() {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) // gate em _authenticated/route.tsx garante usuário
-      else setUserId(data.user.id);
+      if (data.user) setUserId(data.user.id);
     });
-  }, [navigate]);
+  }, []);
 
   const load = useCallback(async () => {
     if (!active) return;
