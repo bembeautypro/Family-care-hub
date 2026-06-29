@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { PushReminderToggle } from "@/components/medicamentos/PushReminderToggle";
 
 export const Route = createFileRoute("/_authenticated/perfil")({
   head: () => ({ meta: [{ title: "Perfil — Amparo" }] }),
@@ -331,9 +332,21 @@ function PerfilPage() {
               </form>
             </section>
 
+            {/* ── Lembretes ──────────────────────────────────── */}
+            <section className="rounded-2xl border bg-card p-5 space-y-3">
+              <div>
+                <h2 className="text-base font-semibold">Lembretes de medicamento</h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Notificações push neste dispositivo nos horários definidos em cada medicamento.
+                </p>
+              </div>
+              <PushReminderToggle />
+            </section>
+
             {/* ── Conta ───────────────────────────────────────── */}
             <section className="rounded-2xl border bg-card p-5 space-y-3">
               <h2 className="text-base font-semibold">Conta</h2>
+
 
               <Button
                 variant="outline"
