@@ -33,6 +33,8 @@ import { Route as AuthenticatedEventosNovoRouteImport } from './routes/_authenti
 import { Route as AuthenticatedDocumentosNovoRouteImport } from './routes/_authenticated/documentos.novo'
 import { Route as AuthenticatedDocumentosIdRouteImport } from './routes/_authenticated/documentos.$id'
 import { Route as AuthenticatedAgendaNovaRouteImport } from './routes/_authenticated/agenda.nova'
+import { Route as ApiPublicHooksSendMedicationRemindersRouteImport } from './routes/api/public/hooks/send-medication-reminders'
+import { Route as ApiPublicHooksDoseActionRouteImport } from './routes/api/public/hooks/dose-action'
 import { Route as AuthenticatedMedicamentosIdEditarRouteImport } from './routes/_authenticated/medicamentos.$id.editar'
 import { Route as AuthenticatedEventosIdEditarRouteImport } from './routes/_authenticated/eventos.$id.editar'
 import { Route as AuthenticatedAgendaIdEditarRouteImport } from './routes/_authenticated/agenda.$id.editar'
@@ -167,6 +169,18 @@ const AuthenticatedAgendaNovaRoute = AuthenticatedAgendaNovaRouteImport.update({
   path: '/agenda/nova',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicHooksSendMedicationRemindersRoute =
+  ApiPublicHooksSendMedicationRemindersRouteImport.update({
+    id: '/api/public/hooks/send-medication-reminders',
+    path: '/api/public/hooks/send-medication-reminders',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksDoseActionRoute =
+  ApiPublicHooksDoseActionRouteImport.update({
+    id: '/api/public/hooks/dose-action',
+    path: '/api/public/hooks/dose-action',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedMedicamentosIdEditarRoute =
   AuthenticatedMedicamentosIdEditarRouteImport.update({
     id: '/medicamentos/$id/editar',
@@ -213,6 +227,8 @@ export interface FileRoutesByFullPath {
   '/agenda/$id/editar': typeof AuthenticatedAgendaIdEditarRoute
   '/eventos/$id/editar': typeof AuthenticatedEventosIdEditarRoute
   '/medicamentos/$id/editar': typeof AuthenticatedMedicamentosIdEditarRoute
+  '/api/public/hooks/dose-action': typeof ApiPublicHooksDoseActionRoute
+  '/api/public/hooks/send-medication-reminders': typeof ApiPublicHooksSendMedicationRemindersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -241,6 +257,8 @@ export interface FileRoutesByTo {
   '/agenda/$id/editar': typeof AuthenticatedAgendaIdEditarRoute
   '/eventos/$id/editar': typeof AuthenticatedEventosIdEditarRoute
   '/medicamentos/$id/editar': typeof AuthenticatedMedicamentosIdEditarRoute
+  '/api/public/hooks/dose-action': typeof ApiPublicHooksDoseActionRoute
+  '/api/public/hooks/send-medication-reminders': typeof ApiPublicHooksSendMedicationRemindersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -271,6 +289,8 @@ export interface FileRoutesById {
   '/_authenticated/agenda/$id/editar': typeof AuthenticatedAgendaIdEditarRoute
   '/_authenticated/eventos/$id/editar': typeof AuthenticatedEventosIdEditarRoute
   '/_authenticated/medicamentos/$id/editar': typeof AuthenticatedMedicamentosIdEditarRoute
+  '/api/public/hooks/dose-action': typeof ApiPublicHooksDoseActionRoute
+  '/api/public/hooks/send-medication-reminders': typeof ApiPublicHooksSendMedicationRemindersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -301,6 +321,8 @@ export interface FileRouteTypes {
     | '/agenda/$id/editar'
     | '/eventos/$id/editar'
     | '/medicamentos/$id/editar'
+    | '/api/public/hooks/dose-action'
+    | '/api/public/hooks/send-medication-reminders'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -329,6 +351,8 @@ export interface FileRouteTypes {
     | '/agenda/$id/editar'
     | '/eventos/$id/editar'
     | '/medicamentos/$id/editar'
+    | '/api/public/hooks/dose-action'
+    | '/api/public/hooks/send-medication-reminders'
   id:
     | '__root__'
     | '/'
@@ -358,6 +382,8 @@ export interface FileRouteTypes {
     | '/_authenticated/agenda/$id/editar'
     | '/_authenticated/eventos/$id/editar'
     | '/_authenticated/medicamentos/$id/editar'
+    | '/api/public/hooks/dose-action'
+    | '/api/public/hooks/send-medication-reminders'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -367,6 +393,8 @@ export interface RootRouteChildren {
   AuthRegistroRoute: typeof AuthRegistroRoute
   ConviteTokenRoute: typeof ConviteTokenRoute
   ETokenRoute: typeof ETokenRoute
+  ApiPublicHooksDoseActionRoute: typeof ApiPublicHooksDoseActionRoute
+  ApiPublicHooksSendMedicationRemindersRoute: typeof ApiPublicHooksSendMedicationRemindersRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -539,6 +567,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAgendaNovaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/hooks/send-medication-reminders': {
+      id: '/api/public/hooks/send-medication-reminders'
+      path: '/api/public/hooks/send-medication-reminders'
+      fullPath: '/api/public/hooks/send-medication-reminders'
+      preLoaderRoute: typeof ApiPublicHooksSendMedicationRemindersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/dose-action': {
+      id: '/api/public/hooks/dose-action'
+      path: '/api/public/hooks/dose-action'
+      fullPath: '/api/public/hooks/dose-action'
+      preLoaderRoute: typeof ApiPublicHooksDoseActionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/medicamentos/$id/editar': {
       id: '/_authenticated/medicamentos/$id/editar'
       path: '/medicamentos/$id/editar'
@@ -624,6 +666,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRegistroRoute: AuthRegistroRoute,
   ConviteTokenRoute: ConviteTokenRoute,
   ETokenRoute: ETokenRoute,
+  ApiPublicHooksDoseActionRoute: ApiPublicHooksDoseActionRoute,
+  ApiPublicHooksSendMedicationRemindersRoute:
+    ApiPublicHooksSendMedicationRemindersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
