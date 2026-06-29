@@ -581,6 +581,41 @@ export type Database = {
           },
         ]
       }
+      medication_reminder_log: {
+        Row: {
+          id: string
+          medication_id: string
+          recipient_count: number
+          scheduled_for: string
+          sent_at: string
+          status: string
+        }
+        Insert: {
+          id?: string
+          medication_id: string
+          recipient_count?: number
+          scheduled_for: string
+          sent_at?: string
+          status?: string
+        }
+        Update: {
+          id?: string
+          medication_id?: string
+          recipient_count?: number
+          scheduled_for?: string
+          sent_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medication_reminder_log_medication_id_fkey"
+            columns: ["medication_id"]
+            isOneToOne: false
+            referencedRelation: "medications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medications: {
         Row: {
           created_at: string | null
@@ -754,6 +789,7 @@ export type Database = {
           notes: string | null
           photo_url: string | null
           preferred_hospital: string | null
+          timezone: string
           updated_at: string | null
           weight: number | null
         }
@@ -773,6 +809,7 @@ export type Database = {
           notes?: string | null
           photo_url?: string | null
           preferred_hospital?: string | null
+          timezone?: string
           updated_at?: string | null
           weight?: number | null
         }
@@ -792,6 +829,7 @@ export type Database = {
           notes?: string | null
           photo_url?: string | null
           preferred_hospital?: string | null
+          timezone?: string
           updated_at?: string | null
           weight?: number | null
         }
@@ -832,6 +870,42 @@ export type Database = {
           phone?: string | null
           photo_url?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          disabled_at: string | null
+          endpoint: string
+          id: string
+          last_seen_at: string
+          p256dh: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          disabled_at?: string | null
+          endpoint: string
+          id?: string
+          last_seen_at?: string
+          p256dh: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          disabled_at?: string | null
+          endpoint?: string
+          id?: string
+          last_seen_at?: string
+          p256dh?: string
+          user_agent?: string | null
+          user_id?: string
         }
         Relationships: []
       }
