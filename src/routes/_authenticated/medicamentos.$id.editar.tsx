@@ -8,6 +8,7 @@ import {
   MedicationForm,
   type MedicationFormInitial,
 } from "@/components/medicamentos/MedicationForm";
+import { PushReminderToggle } from "@/components/medicamentos/PushReminderToggle";
 import type { FrequencyValue } from "@/lib/medicamentos";
 
 export const Route = createFileRoute("/_authenticated/medicamentos/$id/editar")({
@@ -106,6 +107,16 @@ function EditarMedicamento() {
           />
         )}
       </div>
+
+      <section className="mt-8 rounded-2xl border bg-card p-5 space-y-3">
+        <div>
+          <h2 className="text-base font-semibold">Lembretes push</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Ative para receber uma notificação neste dispositivo nos horários do schedule.
+          </p>
+        </div>
+        <PushReminderToggle />
+      </section>
     </main>
   );
 }

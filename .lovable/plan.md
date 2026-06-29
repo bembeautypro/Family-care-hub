@@ -1,89 +1,86 @@
-# Módulo de Histórico Clínico
+## Lembretes de medicamento — push notifications
 
-## 1. Migração de schema (clinical_events)
+Notificação no celular nos horários do `medications.schedule.times`. Toque na notificação ou no botão "Tomei" registra a dose automaticamente.
 
-A tabela hoje tem `type`, `title`, `description`, `severity`, `event_date`, `created_by`, `appointment_id` e soft delete — mas faltam campos do prompt e os valores atuais (`consultation`, `exam`, `low`/`medium`/`high`) não cobrem as 12 categorias nem a gravidade "Crítica".
+### Como vai funcionar (para o usuário)
 
-Mudanças:
-- `ALTER TABLE clinical_events ADD COLUMN tags text[]`
-- `ALTER TABLE clinical_events ADD COLUMN doctor_name text`
-- CHECK constraint em `type` com os 12 valores: `consultation`, `exam`, `hospitalization`, `surgery`, `symptom`, `fall_accident`, `medication_change`, `diagnosis`, `followup`, `crisis`, `vaccine`, `family_note`
-- CHECK constraint em `severity` com `low | medium | high | critical`
-- Índice em `(patient_id, event_date DESC) WHERE deleted_at IS NULL` para ordenar a timeline rápido
-- Índice GIN em `tags`
+1. No card do medicamento (ou em Perfil), botão **"Ativar lembretes"**.
+2. Navegador pede permissão de notificação → app registra subscription.
+3. A cada horário do schedule, chega uma notificação:
+   - Título: "Hora do remédio · Maria"
+   - Corpo: "Losartana 50 mg — 08:00"
+   - Ações: **Tomei** · **Não tomei** · **Adiar 15 min**
+4. Tocar uma ação registra em `medication_doses` sem abrir o app. Tocar a notificação abre o dashboard.
 
-CHECK é seguro aqui (lista imutável de enums) — não viola a regra "use trigger em vez de CHECK" que vale para validações temporais.
+### Componentes técnicos
 
-## 2. Helper compartilhado — `src/lib/historico.ts`
+**1. Banco (1 migration)**
+- `push_subscriptions(id, user_id, endpoint UNIQUE, p256dh, auth, user_agent, created_at, last_seen_at, disabled_at)` — RLS por `user_id`.
+- `medication_reminder_log(medication_id, scheduled_for timestamptz, sent_at, status)` — evita disparo duplicado se o cron rodar 2x na mesma janela.
+- GRANTs + RLS padrão.
 
-- Tipo `EventType` + array `EVENT_TYPES` com `{ value, label pt-BR, icon emoji }` (12 itens)
-- Tipo `Severity` + array `SEVERITIES` com `{ value, label, dotColor, borderColor }` mapeando para tokens semânticos do design system (cinza/azul/laranja/vermelho — adicionar tokens em `src/styles.css` se faltarem)
-- Helper `formatEventDate(date)` em pt-BR (dia + mês abreviado + ano)
+**2. Service worker (`public/sw.js`)**
+- Apenas push + notificationclick. **Sem cache de app shell** (preview-safe, conforme regra PWA).
+- `notificationclick` com `action === "taken"|"skipped"` chama `/api/public/hooks/dose-action` com token assinado embutido no payload da notificação.
+- `notificationclick` sem action: `clients.openWindow("/dashboard")`.
 
-## 3. Timeline — `src/routes/historico.tsx` (reescrita)
+**3. Server functions (autenticadas)**
+- `subscribeToPush({ endpoint, p256dh, auth })` — upsert em `push_subscriptions`.
+- `unsubscribeFromPush({ endpoint })` — marca `disabled_at`.
+- `getVapidPublicKey()` — retorna `VAPID_PUBLIC_KEY` (público, pode ser env exposto).
 
-Layout:
-- `AppHeader` + `PatientSelector` + `BottomNav` + `Fab` (padrão dashboard)
-- Título "Histórico clínico"
-- **Filtro 1** (tipo): chips horizontais com `overflow-x-auto`, primeiro chip "Todos", depois os 12 tipos
-- **Filtro 2** (gravidade): chips "Todos | Baixa | Média | Alta | Crítica"
-- Lista de cards ordenada por `event_date DESC`
-- Estado vazio com CTA "Adicionar primeiro evento"
-- Skeleton durante load (3 cards fake)
+**4. Endpoint público de ação rápida (`/api/public/hooks/dose-action`)**
+- Recebe `{ token }` (JWT HS256 assinado server-side com `medication_id`, `user_id`, `scheduled_for`, exp 30 min).
+- Verifica assinatura → insere em `medication_doses` com status `taken|skipped` → retorna 200.
+- Sem necessidade de sessão do usuário (o token JWT já autoriza essa ação específica).
 
-Card:
-- `border-l-4` com cor da gravidade
-- Data formatada em pt-BR no topo
-- Ícone (emoji) + título em negrito
-- Descrição truncada em 2 linhas (`line-clamp-2`); clique no card alterna `line-clamp-none`
-- Badge de gravidade
-- Nome do registrador (lookup em `profiles` via `created_by`)
-- Botão ⋮ → `Sheet` (bottom sheet) com Editar / Arquivar
+**5. Endpoint de cron (`/api/public/hooks/send-medication-reminders`)**
+- Roda a cada 5 min via pg_cron (granularidade aceitável; horários do schedule são em `HH:00`/`HH:30` na prática).
+- Calcula janela `[now - 2min, now + 5min]` em UTC ajustado por timezone do paciente (`patients.timezone` — adicionar coluna se não existir; default `America/Sao_Paulo`).
+- Para cada medication ativa cujo `schedule.times[]` cai na janela:
+  - Cria registro em `medication_reminder_log` (UNIQUE em `(medication_id, scheduled_for)`).
+  - Para cada `push_subscription` dos responsáveis (`family_members` com role admin/co-caregiver da família), envia push.
+- Usa Web Push via fetch direto (Worker-compat). Helper inline com VAPID (assinatura ECDSA via WebCrypto `subtle.sign`).
 
-Filtragem **server-side**: a query é refeita a cada mudança de filtro com `.eq('type', ...)` e `.eq('severity', ...)`, mais `.eq('patient_id', active.id)` e `.is('deleted_at', null)`.
+**6. UI**
+- Em `medicamentos/$id/editar`: toggle "Ativar lembretes neste dispositivo".
+- Em `perfil`: lista de dispositivos com lembrete ativo + botão "Desativar neste dispositivo".
 
-Arquivar = `UPDATE clinical_events SET deleted_at = now(), deleted_by = auth.uid()` (soft delete) com confirmação via `AlertDialog`.
+### Secrets a configurar
 
-## 4. Form — `src/routes/eventos.novo.tsx` (expansão) + `src/routes/eventos.$id.editar.tsx` (novo)
+- `VAPID_PUBLIC_KEY` (exposto como `VITE_VAPID_PUBLIC_KEY`)
+- `VAPID_PRIVATE_KEY` (server-only)
+- `VAPID_SUBJECT` = `mailto:admin@amparo.app`
+- `DOSE_ACTION_JWT_SECRET` (server-only, HS256)
 
-Extrair a lógica para `src/components/eventos/ClinicalEventForm.tsx` (compartilhado novo/editar):
-- Select de **tipo** com os 12 valores (emoji + label)
-- Date picker (shadcn `Calendar` em `Popover`, `pointer-events-auto`)
-- Input título (obrigatório)
-- Textarea descrição
-- Radio group de gravidade com 4 opções (incluindo Crítica)
-- Input de tags (string separada por vírgula → `text[]`); chips removíveis embaixo
-- Input médico relacionado (`doctor_name`)
-- Mantém compatibilidade com `?appointment=<id>` (carrega evento já existente para editar orientações)
+Eu gero os pares VAPID via `node` no sandbox antes de salvar.
 
-Rota `/eventos/$id/editar` carrega por `id`, popula o form, faz UPDATE.
+### Decisões assumidas
 
-## 5. Bottom nav + dashboard
+- **Granularidade**: cron a cada 5 min (Supabase pg_cron mínimo confortável). Schedules típicos são em horas cheias/meias.
+- **Quem recebe**: todos os usuários da família com role `admin` ou `co_caregiver` que tenham subscription ativa. O texto da notificação inclui o nome do paciente.
+- **"Adiar 15 min"**: ação grava em `medication_reminder_log` com `scheduled_for + 15min` para reagendamento.
+- **iOS**: Safari iOS 16.4+ suporta push em PWAs instalados via "Adicionar à tela de início". App já é instalável (manifest existe).
+- **Sem cache do app shell** no service worker — Lovable preview-safe.
 
-- O `BottomNav` continua com 5 itens; "Histórico" não entra na nav (é acessado via dashboard "Ver histórico completo →" que já aponta para `/historico`)
-- Sem mudanças no dashboard
+### Limites conhecidos (transparentes)
 
-## Aspectos técnicos
+- Antes do app ser publicado, o service worker fica restrito ao domínio de preview. Push real só funciona em produção (HTTPS estável).
+- Usuários precisam abrir o app uma vez por dispositivo para registrar a subscription.
 
-- Todas queries: `WHERE deleted_at IS NULL`, `WHERE patient_id = active.id`, ordenadas por `event_date DESC, created_at DESC`
-- Filtros aplicados no servidor (refetch ao mudar chip), nada filtrado no client
-- Soft delete via UPDATE (RLS já cobre via `editors can update clinical_events`)
-- Sem swipe — ações sempre via botão ⋮ + bottom sheet
-- Tokens de cor (severity) definidos em `src/styles.css` para não usar classes hex inline
-- FAB em `bottom: 72px` (já garantido pelo `Fab` compartilhado)
-- Auth gate via `supabase.auth.getUser()` no componente, redireciona para `/auth/login` se sem sessão
+### Não inclui (escopo deste lote)
 
-## Arquivos
+- Edição de horário individual por dose (só usa o `schedule.times` existente).
+- Notificações de compromissos ou pendências.
+- Lembrete de "tomar antes da janela" (só dispara dentro da janela).
 
-**Criar:**
-- `src/lib/historico.ts`
-- `src/components/eventos/ClinicalEventForm.tsx`
-- `src/routes/eventos.$id.editar.tsx`
+### Entrega
 
-**Editar:**
-- `src/routes/historico.tsx` (reescrita completa)
-- `src/routes/eventos.novo.tsx` (passa a usar `ClinicalEventForm`)
-- `src/styles.css` (tokens de severidade, se faltarem)
-- `src/routeTree.gen.ts` (registro da rota de editar)
+- 1 migration (3 tabelas/colunas + RLS + GRANTs).
+- 1 service worker (`public/sw.js`).
+- 1 helper de push (`src/lib/push.server.ts`) com VAPID via WebCrypto.
+- 3 server functions + 2 server routes públicos.
+- Toggle de inscrição em `medicamentos.$id.editar.tsx` + lista em `perfil.tsx`.
+- Cron pg_cron a cada 5 min.
 
-**Migration:** `add tags + doctor_name + CHECK constraints + índices em clinical_events`
+Posso seguir?
