@@ -7,11 +7,15 @@ type Subscription = {
   auth: string; // base64url 16-byte secret
 };
 
+// TS 5.x narrows Uint8Array to <ArrayBufferLike>; SubtleCrypto wants <ArrayBuffer>.
+// Cast helper centralises the (safe) widening at every call site.
+const bs = (u: Uint8Array): BufferSource => u as unknown as BufferSource;
+
 function b64urlDecode(s: string): Uint8Array {
   const pad = "=".repeat((4 - (s.length % 4)) % 4);
   const b64 = (s + pad).replace(/-/g, "+").replace(/_/g, "/");
   const bin = atob(b64);
-  const out = new Uint8Array(bin.length);
+  const out = new Uint8Array(new ArrayBuffer(bin.length));
   for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
   return out;
 }
@@ -40,9 +44,9 @@ async function hkdf(
   info: Uint8Array,
   length: number,
 ): Promise<Uint8Array> {
-  const key = await crypto.subtle.importKey("raw", ikm, "HKDF", false, ["deriveBits"]);
+  const key = await crypto.subtle.importKey("raw", bs(ikm), "HKDF", false, ["deriveBits"]);
   const bits = await crypto.subtle.deriveBits(
-    { name: "HKDF", hash: "SHA-256", salt, info },
+    { name: "HKDF", hash: "SHA-256", salt: bs(salt), info: bs(info) },
     key,
     length * 8,
   );
@@ -127,7 +131,7 @@ async function encryptPayload(
   // 2. Import UA public key & derive shared secret.
   const uaPubKey = await crypto.subtle.importKey(
     "raw",
-    uaPubRaw,
+    bs(uaPubRaw),
     { name: "ECDH", namedCurve: "P-256" },
     false,
     [],
@@ -165,14 +169,14 @@ async function encryptPayload(
   // 5. AES-128-GCM encrypt(payload || 0x02).
   const cekKey = await crypto.subtle.importKey(
     "raw",
-    cek,
+    bs(cek),
     { name: "AES-GCM" },
     false,
     ["encrypt"],
   );
   const plain = concat(payload, new Uint8Array([0x02]));
   const ciphertext = new Uint8Array(
-    await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce }, cekKey, plain),
+    await crypto.subtle.encrypt({ name: "AES-GCM", iv: bs(nonce) }, cekKey, bs(plain)),
   );
 
   // 6. Assemble record: salt(16) || rs(4 BE) || idlen(1) || keyid(asPub 65) || ciphertext.
@@ -212,7 +216,7 @@ export async function sendWebPush(
       Urgency: "high",
       Authorization: auth,
     },
-    body,
+    body: body as unknown as BodyInit,
   });
   return {
     ok: res.ok,
