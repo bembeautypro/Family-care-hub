@@ -32,7 +32,7 @@ async function verifyJwt(token: string, secret: string): Promise<Record<string, 
   const ok = await crypto.subtle.verify(
     "HMAC",
     key,
-    b64urlDecode(s),
+    b64urlDecode(s) as unknown as BufferSource,
     new TextEncoder().encode(`${h}.${p}`),
   );
   if (!ok) return null;
