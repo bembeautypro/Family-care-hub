@@ -16,6 +16,7 @@ import {
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
+import { searchDocuments } from "@/lib/documentos";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -101,21 +102,7 @@ function DocumentosList() {
     if (!active) return;
     setDocs(null);
 
-    let req = supabase
-      .from("documents")
-      .select(
-        "id, title, type, file_path, file_mime_type, document_date, institution, doctor_name",
-      )
-      .eq("patient_id", active.id)
-      .is("deleted_at", null)
-      .order("document_date", { ascending: false, nullsFirst: false })
-      .order("created_at", { ascending: false });
-
-    if (query.trim()) {
-      req = req.textSearch("search_vector", query.trim(), { config: "portuguese" });
-    }
-
-    const { data, error } = await req;
+    const { data, error } = await searchDocuments({ patientId: active.id, query });
 
     if (error) {
       toast.error(error.message);
