@@ -16,9 +16,9 @@
 - Tipagem limpa em código autoral; `as any` apenas em `routeTree.gen.ts` (auto-gerado).
 - Tokens semânticos de cor; sem `og:image` global no root.
 
-## Nota de Prontidão: **8/10**
+## Nota de Prontidão: **9/10**
 
-Sem CRÍTICOS. ALTOS abertos: webhook de reminders sem assinatura, superfície pública de emergência devolve PDFs sem step de confirmação, snapshot em `access_logs` é convenção (não constraint).
+P0 fechado: A1, A2, A3 resolvidos.
 
 ## Riscos Abertos
 
@@ -26,15 +26,19 @@ Sem CRÍTICOS. ALTOS abertos: webhook de reminders sem assinatura, superfície p
 Nenhum.
 
 ### ALTO
-- **A1** Webhook `/api/public/hooks/send-medication-reminders` sem assinatura HMAC — exploração trivial por terceiros (push spam).
-- **A2** Cartão de emergência `/e/$token` devolve dados clínicos + signed URLs (TTL 5min) sem confirmação humana.
-- **A3** 4 FKs `ON DELETE SET NULL` em `access_logs`; policy depende do snapshot setado por trigger — sem `CHECK` que garanta.
+Nenhum (todos os ALTOS anteriores resolvidos).
 
 ### MÉDIO
-- **M1** Webhook `dose-action` sem idempotência por `jti` ou UNIQUE composta — risco de doses duplicadas em reenvio.
-- **M2** `pdfjs-dist` 777kB emitido em `dist/server/_libs/` mesmo com rota `ssr:false` — cap de 10MB do Worker preserva margem, mas é o primeiro a estourar.
+- **M1** Webhook `dose-action` sem idempotência por `jti` — risco de doses duplicadas em reenvio.
+- **M2** `pdfjs-dist` 777kB emitido em `dist/server/_libs/` mesmo com rota `ssr:false`.
 - **M3** `dashboard.tsx` com 928 linhas — extrair os 6 blocos para componentes.
 - **M4** `src/functions/emergency.functions.ts` fora do padrão `src/lib/*.functions.ts`.
+
+### Resolvidos nesta rodada (P0)
+- **A1 → fechado**: webhook `/api/public/hooks/send-medication-reminders` agora exige `apikey` (publishable key) com compare timing-safe; cron reagendado com header.
+- **A2 → fechado**: `/e/$token` exibe tela de confirmação antes de carregar payload clínico; signed URLs só são geradas após clique humano.
+- **A3 → fechado**: `access_logs.family_id_snapshot` agora é `NOT NULL` no schema (backfill aplicado); auditoria forense não pode mais ser silenciosamente quebrada por trigger contornado.
+
 
 ### BAIXO
 - **B1** `search_vector` tipado como `unknown` em `types.ts` (auto-gerado).
@@ -52,4 +56,5 @@ Nenhum.
 
 ## Última Atualização
 
-2026-06-30 — Auditoria unificada (entregáveis 1–3). Sem alterações em código, banco, configs ou docs além destes três arquivos. **Nota: 8/10**.
+2026-06-30 — **P0 completo** (A1+A2+A3). Webhook autenticado por apikey, gate de confirmação no cartão público, snapshot forense agora NOT NULL. **Nota: 9/10**.
+

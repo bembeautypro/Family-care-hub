@@ -49,10 +49,10 @@ export const logEmergencyAccess = createServerFn({ method: "POST" })
         { onConflict: "ip_address,window_start" },
       );
 
-    // 1. Busca emergency_link pelo token
+    // 1. Busca emergency_link pelo token (com family_id do paciente para snapshot)
     const { data: link, error: linkErr } = await supabaseAdmin
       .from("emergency_links")
-      .select("id, patient_id, is_active, expires_at, access_count")
+      .select("id, patient_id, is_active, expires_at, access_count, patients!inner(family_id)")
       .eq("token", token)
       .single();
 
@@ -60,6 +60,7 @@ export const logEmergencyAccess = createServerFn({ method: "POST" })
       throw new Error("LINK_INVALID");
     }
     const patientId = link.patient_id;
+    const familyIdSnapshot = (link as unknown as { patients: { family_id: string } }).patients.family_id;
 
     // 2. Valida is_active, expiração e cap de uso (P0-02)
     const isExpired =
@@ -73,6 +74,8 @@ export const logEmergencyAccess = createServerFn({ method: "POST" })
     await supabaseAdmin.from("access_logs").insert({
       emergency_link_id: link.id,
       patient_id: link.patient_id,
+      family_id_snapshot: familyIdSnapshot,
+      patient_id_snapshot: link.patient_id,
       action: "emergency_view",
       resource_type: "emergency_link",
       resource_id: link.id,

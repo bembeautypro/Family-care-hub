@@ -28,7 +28,20 @@ function minutesBetween(a: string, b: string): number {
 export const Route = createFileRoute("/api/public/hooks/send-medication-reminders")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        // Auth: cron must present the project's publishable key in `apikey` header.
+        const expected = process.env.SUPABASE_PUBLISHABLE_KEY;
+        const apikey = request.headers.get("apikey") ?? "";
+        if (!expected || apikey.length !== expected.length) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        // Timing-safe compare
+        let diff = 0;
+        for (let i = 0; i < expected.length; i++) {
+          diff |= apikey.charCodeAt(i) ^ expected.charCodeAt(i);
+        }
+        if (diff !== 0) return new Response("Unauthorized", { status: 401 });
+
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
         const now = new Date();
