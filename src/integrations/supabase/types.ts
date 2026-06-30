@@ -925,6 +925,7 @@ export type Database = {
         Returns: boolean
       }
       is_family_member: { Args: { fid: string }; Returns: boolean }
+      purge_old_access_logs: { Args: never; Returns: number }
     }
     Enums: {
       [_ in never]: never
