@@ -20,7 +20,7 @@ export type Database = {
           created_at: string | null
           emergency_link_id: string | null
           family_id: string | null
-          family_id_snapshot: string | null
+          family_id_snapshot: string
           id: string
           ip_address: string | null
           patient_id: string | null
@@ -35,7 +35,7 @@ export type Database = {
           created_at?: string | null
           emergency_link_id?: string | null
           family_id?: string | null
-          family_id_snapshot?: string | null
+          family_id_snapshot: string
           id?: string
           ip_address?: string | null
           patient_id?: string | null
@@ -50,7 +50,7 @@ export type Database = {
           created_at?: string | null
           emergency_link_id?: string | null
           family_id?: string | null
-          family_id_snapshot?: string | null
+          family_id_snapshot?: string
           id?: string
           ip_address?: string | null
           patient_id?: string | null
