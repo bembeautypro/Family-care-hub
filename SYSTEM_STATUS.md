@@ -56,4 +56,5 @@ Nenhum (todos os ALTOS anteriores resolvidos).
 
 ## Última Atualização
 
-2026-06-30 — Auditoria unificada (entregáveis 1–3). Sem alterações em código, banco, configs ou docs além destes três arquivos. **Nota: 8/10**.
+2026-06-30 — **P0 completo** (A1+A2+A3). Webhook autenticado por apikey, gate de confirmação no cartão público, snapshot forense agora NOT NULL. **Nota: 9/10**.
+
