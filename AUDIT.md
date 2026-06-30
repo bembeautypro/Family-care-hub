@@ -1,154 +1,136 @@
 # AUDIT — Amparo (Family Health Hub)
 
-Data: 2026-06-15 · Auditor: engenheiro sênior · Modo: somente leitura.
+Data: 2026-06-30 · Auditor: engenheiro sênior · Modo: somente leitura · Build verificado: `bun run build` ✓ ~7.5s (preset `cloudflare_module`).
 
 ## Resumo Executivo
 
-Projeto **builda** (`bun run build` ✓, ~11s, sem erros) e tem fundação sólida: 14 tabelas com RLS habilitada e GRANTs corretos (`supabase--read_query`), bucket privado `medical-documents` com policies por `family_id/patient_id/{file}` (migration `…170407_…sql:497-555`), `createServerFn` + `supabaseAdmin` para fluxos privilegiados (`src/lib/familia.functions.ts`, `src/functions/emergency.functions.ts`, `src/lib/onboarding.functions.ts`, `src/lib/perfil.functions.ts`), soft delete consistentemente aplicado em todas as leituras clínicas (37 ocorrências de `.is("deleted_at", null)`), FTS server-side com `search_vector` + `textSearch` em português (`src/routes/documentos.index.tsx:120`), schedule de medicamentos no shape obrigatório `{ times: string[] }` (`src/lib/medicamentos.ts:35`, `src/routes/medicamentos.index.tsx:45`), bottom sheet via Sheet em `documentos.index`, `agenda.index` e Fab (sem swipe), upload rejeita HEIC (`documentos.novo.tsx:121-125`, accept apenas JPEG/PNG/PDF).
+Projeto **builda limpo**, tem 116 arquivos TS/TSX, 29 rotas (28 páginas + 2 endpoints públicos), 18 tabelas Postgres com RLS=true em **todas** e 49 policies (`pg_policies`). Fundação sólida: gate único de auth em `src/routes/_authenticated/route.tsx:9-22` (`ssr:false` + `beforeLoad` checa `supabase.auth.getUser()`); 100% das mutations privilegiadas em `createServerFn` + `supabaseAdmin` lazy-loaded; soft delete consistente em 6 tabelas clínicas; FTS server-side em documentos (`idx_documents_fts` GIN); 7 índices parciais `(patient_id) WHERE deleted_at IS NULL`; rate-limit + snapshots forenses no endpoint público de emergência; 3 cron jobs `pg_cron` ativos (purga LGPD diária + reminders a cada 5min). PWA com manifest e service worker para Web Push VAPID artesanal (compatível com Worker via `crypto.subtle`). Realtime habilitado em `medications`, `appointments`, `medication_doses`.
 
-Risco dominante: **divergência de deploy** — código está com preset Vercel (`vite.config.ts:12` `nitro({ preset: "vercel" })`, `vercel.json`) enquanto a stack obrigatória manda Cloudflare Workers; e **dependência declarada faltando** (`react-pdf` não instalado). Há também ausência da camada `_authenticated/` da TanStack (todas as rotas privadas re-implementam manualmente o gate via `supabase.auth.getUser()` em `useEffect` — 20+ ocorrências), o que é estável mas frágil e fora da convenção.
-
-Sem nenhum CRÍTICO de segurança/dados de banco encontrado por leitura.
+Sem CRÍTICOS de segurança ou integridade encontrados por leitura estática. Riscos remanescentes: superfície pública `/e/$token` retorna dados clínicos + signed URLs (TTL 5min) — vazamento do QR = vazamento clínico até expirar; webhook `/api/public/hooks/send-medication-reminders` sem assinatura (apenas obscuridade); 4 FKs em `access_logs` com `ON DELETE SET NULL` mitigadas por snapshots (`family_id_snapshot`, `patient_id_snapshot`) mas a policy depende do snapshot estar setado pelo trigger. Pronto para beta fechado; endurecimento (assinatura no webhook, rotação de token de emergência, testes do pipeline VAPID) recomendado antes de público geral.
 
 ## Inventário de Funcionalidades
 
 | Funcionalidade | Status | Evidência |
 |---|---|---|
 | Landing pública | FUNCIONANDO | `src/routes/index.tsx` |
-| Cadastro (e-mail/senha) | FUNCIONANDO | `src/routes/auth/registro.tsx` (275 linhas) |
-| Login + aceitação de convite no mesmo fluxo | FUNCIONANDO | `src/routes/auth/login.tsx:38-69` |
-| Onboarding multi-etapa (familia → familiar → emergencia → primeira-acao) | FUNCIONANDO | `src/routes/onboarding/*.tsx`, `src/lib/onboarding/redirect.ts`, `profiles.onboarding_step` (migration `…170407:21`) |
-| Dashboard com seletor de paciente | FUNCIONANDO | `src/routes/dashboard.tsx`, `useActivePatient` |
-| Cadastro/edição/listagem de medicamentos | FUNCIONANDO | `medicamentos.{index,novo,$id.editar}.tsx`, `MedicationForm` |
-| Schedule conforme schema `{ times: [] }` | FUNCIONANDO | `src/lib/medicamentos.ts:35` (`buildSchedule`), `src/components/medicamentos/MedicationForm.tsx:180` |
-| Agenda (consultas) CRUD | FUNCIONANDO | `agenda.{index,nova,$id.editar}.tsx`, `AppointmentForm` |
-| Histórico clínico (timeline) | FUNCIONANDO | `historico.tsx`, `eventos.{novo,$id.editar}.tsx`, `ClinicalEventForm`, migration M4 |
-| Documentos: upload + listagem + busca FTS server-side | FUNCIONANDO | `documentos.novo.tsx`, `documentos.index.tsx:120` (`textSearch("search_vector", q, { config: "portuguese" })`) |
-| Soft delete em documentos/medicamentos/agenda/eventos/paciente | FUNCIONANDO | 37 ocorrências de `.is("deleted_at", null)` e 6 updates `{ deleted_at, deleted_by }` |
-| Família: convidar / aceitar / mudar papel / remover | FUNCIONANDO | `src/lib/familia.functions.ts` (4 server fns, todas com `requireSupabaseAuth` + checagem de admin + proteção contra remover único admin: linhas 192-209, 238-252) |
-| Cartão de emergência público + log de acesso | PARCIAL | `src/routes/e.$token.tsx` (520 linhas), `src/functions/emergency.functions.ts`. Funcional, mas ver Riscos M1 (sem rate-limit), A1 (FK `patient_id` nullable nos logs) |
-| Página de Emergência interna + geração de QR | FUNCIONANDO | `src/routes/emergencia.tsx`, dep `qrcode.react` instalada |
-| Perfil + exclusão de conta com proteção solo-admin | FUNCIONANDO | `src/routes/perfil.tsx`, `src/lib/perfil.functions.ts:38-79`, RPC `get_solo_admin_families` |
-| Visualizador de PDF in-app | NÃO IMPLEMENTADO | `react-pdf` não está em `package.json` apesar de exigido pelo project-knowledge; nenhum import encontrado. Fluxo atual abre via URL assinada (`src/lib/supabase/storage.ts`) |
-| PWA / Service Worker | NÃO IMPLEMENTADO | Nenhum `manifest.json`, `vite-plugin-pwa` ou registro de SW |
-| Realtime (Supabase channels) | NÃO IMPLEMENTADO | Zero ocorrências de `.channel(` / `subscribe(` em `src/` |
-| Purga LGPD de `access_logs` (90d) | NÃO IMPLEMENTADO | Comentário na migration (`…170407:577`) anuncia "schedule pg_cron purge"; não há job declarado — NÃO VERIFICÁVEL em runtime |
+| Cadastro (e-mail/senha) com verificação obrigatória | FUNCIONANDO | `src/routes/auth/registro.tsx` |
+| Login + aceite de convite no mesmo fluxo | FUNCIONANDO | `src/routes/auth/login.tsx` |
+| Onboarding 4 passos (familia → familiar → emergencia → primeira-acao) | FUNCIONANDO | `src/routes/_authenticated/onboarding/*.tsx` (4 rotas), `src/lib/onboarding/redirect.ts`, `profiles.onboarding_step` |
+| Self-insert admin via server fn | FUNCIONANDO | `src/lib/onboarding.functions.ts` (`createFamilyWithAdmin`, supabaseAdmin) |
+| Dashboard com seletor de paciente + React Query + Realtime | FUNCIONANDO | `src/routes/_authenticated/dashboard.tsx` (928 linhas), `useActivePatient` |
+| CRUD Medicamentos + schedule `{times:[]}` | FUNCIONANDO | `medicamentos.{index,novo,$id.editar}.tsx`, `src/lib/medicamentos.ts`, `MedicationForm.tsx` |
+| Botões rápidos "Tomei/Não tomei" + histórico de doses | FUNCIONANDO | tabela `medication_doses` (4 policies), realtime no dashboard |
+| CRUD Agenda com responsável obrigatório + "Criar retorno" | FUNCIONANDO | `agenda.{index,nova,$id.editar}.tsx`, `AppointmentForm.tsx`, FK `parent_appointment_id` |
+| Marcar como realizado → registrar evento clínico | FUNCIONANDO | banner pós-ação no agenda.index |
+| Histórico clínico (timeline filtrável) | FUNCIONANDO | `historico.tsx`, `ClinicalEventForm.tsx`, índice composto `(patient_id, event_date DESC) WHERE deleted_at IS NULL` |
+| Documentos: upload + FTS server-side + signed URL | FUNCIONANDO | `documentos.{index,novo,$id}.tsx`, `idx_documents_fts` GIN, accept JPEG/PNG/PDF (HEIC bloqueado) |
+| Visualizador PDF inline (rota `ssr:false`) | FUNCIONANDO | `documentos.$id.tsx` + `src/components/documents/PdfViewer.tsx` (react-pdf lazy, 777kB chunk isolado) |
+| Família: convidar / aceitar / mudar papel / remover, proteção solo-admin | FUNCIONANDO | `src/lib/familia.functions.ts` (4 server fns) |
+| Cartão de emergência público + QR + log + rate-limit | FUNCIONANDO | `src/routes/e.$token.tsx` (520L), `src/functions/emergency.functions.ts:31-60` |
+| Perfil + exclusão de conta com proteção solo-admin | FUNCIONANDO | `src/routes/_authenticated/perfil.tsx`, `src/lib/perfil.functions.ts`, RPC `get_solo_admin_families` |
+| PWA instalável (manifest + ícones) | FUNCIONANDO | `public/manifest.webmanifest`, `public/sw.js` |
+| Push notifications VAPID (lembretes) | FUNCIONANDO (não testável em sandbox HTTP) | `src/lib/push.server.ts:89` (`VAPID_PRIVATE_KEY`), `PushReminderToggle.tsx`, cron 5min |
+| Webhook de ação por notificação (Tomei/Pular) | FUNCIONANDO | `src/routes/api/public/hooks/dose-action.ts` (JWT HS256, secret `DOSE_ACTION_JWT_SECRET`) |
+| Realtime no dashboard | FUNCIONANDO | canais `medications`, `appointments`, `medication_doses` invalidam React Query |
+| Cron de purga LGPD `access_logs` 90d | FUNCIONANDO | `cron.job` `purge-access-logs-90d` 03:15 UTC, ativo |
+| Cron de purga `emergency_rate_limits` 1d | FUNCIONANDO | `cron.job` `purge-emergency-rate-limits-1d` 03:20 UTC, ativo |
+| Cron disparador de lembretes a cada 5min | FUNCIONANDO | `cron.job` `send-medication-reminders-5min` via `pg_net` POST público |
+| Design system reference page | FUNCIONANDO | `src/routes/design.tsx` |
 
-## Arquitetura e Banco (visão compacta)
+## Arquitetura e Banco
 
-**Frontend.** TanStack Start 1.167 + React 19 + Vite 7 + Tailwind v4 + shadcn/Radix. Router file-based em `src/routes/` (26 rotas .tsx, sem `src/pages/`). Provider único: `QueryClientProvider` em `__root.tsx:122-129`. Boundaries de erro e 404 definidos no root (`__root.tsx:14-72`). `defaultPreloadStaleTime: 0` em `src/router.tsx:11`. **Não há subtree `_authenticated/`** — toda rota privada faz `supabase.auth.getUser()` em `useEffect` + `navigate({ to: "/auth/login" })` (e.g. `dashboard.tsx:69-83`, `paciente.$id.tsx:178`, `perfil.tsx:81`, `medicamentos.index.tsx:63`, `agenda.index.tsx`, etc.). Hooks customizados: apenas `useActivePatient` e `use-mobile`.
+**Frontend.** TanStack Start 1.x + React 19 + Vite 7 + Tailwind v4 + shadcn/Radix. Router file-based em `src/routes/`. Provider único `QueryClientProvider` em `__root.tsx`. Errors/404 no root. Hooks: `useActivePatient`, `use-mobile`. Gate único em `_authenticated/route.tsx:9-22` — child routes não duplicam auth.
 
-**Server.** `createServerFn` com `attachSupabaseAuth` global em `src/start.ts`. Três clients: browser (`integrations/supabase/client.ts`), middleware autenticado (`auth-middleware.ts`), admin/service-role (`client.server.ts`). Server fns: `familia.functions.ts` (generateInviteLink, acceptInvitation, changeMemberRole, removeMember), `onboarding.functions.ts` (createFamilyWithAdmin), `perfil.functions.ts` (updateProfile, deleteAccount), `emergency.functions.ts` (logEmergencyAccess). **Nenhuma Edge Function Supabase** (alinhado à diretriz).
+**Server.** `createServerFn` + `attachSupabaseAuth` em `src/start.ts`. Três clients (browser, middleware autenticado, admin/service-role). Admin sempre lazy-loaded dentro de handlers. Zero Edge Functions Supabase. Endpoints HTTP públicos em `src/routes/api/public/hooks/` (dose-action, send-medication-reminders).
 
-**Banco — 14 tabelas, RLS=true em todas, GRANTs corretos:**
+**Banco — 18 tabelas, RLS=true em todas (confirmado em `pg_tables`), 49 policies em `pg_policies`:**
 
-| Tabela | Cols | Pols | Soft-delete | FK→family/patient | Observações |
-|---|---:|---:|:-:|:-:|---|
-| profiles | 7 | 3 | — | → auth.users | trigger `handle_new_user` cria perfil |
-| families | 5 | 3 | — | — | |
-| family_members | 8 | 2 | — | family,user | UNIQUE(family_id,user_id) |
-| invitations | 9 | 1 | — | family | token = `gen_random_bytes(32)`, 7d expires |
-| patients | 17 | 3 | ✓ | family | `on delete restrict` em family_id |
-| patient_conditions | 10 | 3 | ✓ | patient | |
-| patient_allergies | 8 | 3 | ✓ | patient | severity check |
-| emergency_contacts | 10 | 3 | ✓ | patient | |
-| medications | 17 | 3 | ✓ | patient | `schedule jsonb` shape ok |
-| appointments | 18 | 3 | ✓ | patient | `parent_appointment_id` self-FK |
-| clinical_events | 15 | 3 | ✓ | patient | M4 adiciona `tags[]`, `doctor_name`, índice composto `(patient_id, event_date DESC) WHERE deleted_at IS NULL` |
-| documents | 21 | 3 | ✓ | patient | `search_vector tsvector` gerado + GIN; `file_path` (não `file_url`) |
-| emergency_links | 8 | 1 | — | patient | token 32 bytes, `access_count`, `is_active` |
-| access_logs | 11 | 1 | — | family,patient,user,link | SELECT only para `authenticated` (escrita só service_role) |
+| Tabela | RLS | Policies | Soft delete | Observação |
+|---|:-:|:-:|:-:|---|
+| profiles | ✓ | 3 | — | trigger `handle_new_user` em `auth.users` |
+| families | ✓ | 3 | — | |
+| family_members | ✓ | 2 | — | UNIQUE(family_id,user_id) |
+| invitations | ✓ | 1 | — | token = `gen_random_bytes(32)` |
+| patients | ✓ | 3 | ✓ | FK family `ON DELETE RESTRICT` |
+| patient_conditions / patient_allergies / emergency_contacts | ✓ | 3 ea. | ✓ | FK patient `ON DELETE CASCADE` |
+| medications | ✓ | 3 | ✓ | schedule JSONB `{times:[]}` |
+| medication_doses | ✓ | 4 | — | FKs patient/medication CASCADE |
+| medication_reminder_log | ✓ | 1 | — | idempotência de envio |
+| appointments | ✓ | 3 | ✓ | self-FK `parent_appointment_id` SET NULL |
+| clinical_events | ✓ | 3 | ✓ | índice `(patient_id, event_date DESC) WHERE deleted_at IS NULL` |
+| documents | ✓ | 3 | ✓ | `search_vector tsvector` + GIN, `file_path` (não `file_url`) |
+| emergency_links | ✓ | 1 | — | token 32 bytes, `access_count`, `is_active` |
+| emergency_rate_limits | ✓ | — | — | **INFO Supabase 0008: RLS sem policy** — escrita só via service_role no server fn; leitura propositalmente bloqueada |
+| access_logs | ✓ | 1 | — | 4 FKs `ON DELETE SET NULL`, mitigado por snapshots e trigger `access_logs_set_snapshots` |
+| push_subscriptions | ✓ | 1 | — | endpoint + p256dh + auth keys |
 
-**Helpers SECURITY DEFINER, search_path=public, STABLE:** `is_family_member(fid)`, `has_family_role(fid, roles[])`, `get_solo_admin_families(p_user_id)`. Execute revogado de `anon` (migrations M2/M3); mantido em `authenticated` (necessário porque são chamados de dentro das policies). Linter Supabase emite WARN 0029 nas três — comportamento esperado e documentado em `@security-memory`.
+**Helpers SECURITY DEFINER, search_path=public, STABLE:** `is_family_member(fid)`, `has_family_role(fid, roles[])`, `get_solo_admin_families(p_user_id)`. Supabase linter emite WARN 0029 nos três — esperado (são chamados de dentro das policies). Também `handle_new_user`, `set_updated_at`, `access_logs_set_snapshots`.
 
-**Storage.** Bucket `medical-documents` privado (verificado em `<storage-buckets>`). 4 policies em `storage.objects` baseadas em `(storage.foldername(name))[2] = patient_id` + membership ativo. Convenção `family_id/patient_id/filename` documentada na migration.
+**Storage.** Bucket `medical-documents` privado. Convenção `family_id/patient_id/filename`.
 
-**Triggers de aplicação:** zero (apenas `set_updated_at` de schema). `<db-triggers>` reporta vazio — `handle_new_user` é trigger em `auth.users`, não listado.
+**Cron (`cron.job`):** 3 jobs ativos confirmados em runtime — `purge-access-logs-90d` (15 3 * * *), `purge-emergency-rate-limits-1d` (20 3 * * *), `send-medication-reminders-5min` (`*/5 * * * *`).
 
-**Integrações externas:** nenhuma além de Supabase (Auth, Postgres, Storage). Sem Stripe, sem AI Gateway, sem email transacional configurado.
+**Secrets configurados (Lovable Cloud):** `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_DB_URL`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `DOSE_ACTION_JWT_SECRET`, `LOVABLE_API_KEY`.
 
-**Env vars referenciadas:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` (browser), `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server). Todos presentes em `<secrets>`.
+**Integrações externas:** apenas Supabase + Web Push (push services do navegador). Sem Stripe, AI Gateway em uso, email transacional.
 
 ## Riscos por Severidade
 
 ### CRÍTICO — 0
-Nenhum risco que impeça produção foi encontrado por leitura estática.
+Nenhum risco que impeça produção.
 
 ### ALTO
 
-**A1. FK `access_logs.patient_id` é `ON DELETE SET NULL` — auditoria de acesso de emergência fica órfã.**
-- Evidência: migration `…170407_…sql:583` (`patient_id uuid references public.patients(id) on delete set null`) e policy de leitura exige `family_id is not null` (`…170407:601`).
-- Impacto: ao deletar um paciente (hard delete; o app usa soft mas é teoricamente possível via service_role/admin), todos os logs de acesso anteriores ficam com `patient_id=NULL` e **também `family_id=NULL`** (mesma estratégia, `…170407:580`), tornando-os invisíveis para qualquer admin via RLS — sem trilha forense.
-- Esforço: P (mudar para `on delete cascade` *ou* manter o vínculo via `family_id` snapshot + alterar a policy).
+**A1. Endpoint público `/api/public/hooks/send-medication-reminders` sem assinatura/secret.**
+Evidência: `src/routes/api/public/hooks/send-medication-reminders.ts:44-148` — handler aceita POST sem header de auth ou HMAC. Apenas o cron `pg_net` chama hoje, mas o endpoint é descoberto via DNS público (`project--96384b44-…lovable.app/api/public/hooks/send-medication-reminders`). Impacto: terceiro pode disparar push spam para todos os usuários (somando custos de log + risco de revogação do endpoint pelos browsers). Esforço: P (HMAC com header `x-cron-secret` validado por `timingSafeEqual`).
 
-**A2. Re-implementação manual do gate de autenticação em ~20 rotas privadas; nenhuma subtree `_authenticated/`.**
-- Evidência: 20 ocorrências de `supabase.auth.getUser().then(...)` em `useEffect` (e.g. `dashboard.tsx:69`, `paciente.$id.tsx:178`, `perfil.tsx:81`, `medicamentos.index.tsx:63`, `agenda.index.tsx`, `documentos.index.tsx:100`, `historico.tsx:73`, `familia.tsx:152`, `emergencia.tsx:90`, todos os 4 onboarding/*).
-- Impacto: cada rota é responsável por seu próprio redirect — qualquer rota nova esquecida não tem gate; SSR já tenta renderizar HTML autenticado antes do redirect (flash de UI vazia + chamadas RLS-bloqueadas). Frágil para adicionar features.
-- Esforço: M (mover árvore para `src/routes/_authenticated/` com `route.tsx` `ssr:false` conforme convenção TanStack).
+**A2. Cartão de emergência `/e/$token` devolve dados clínicos sensíveis + signed URLs (TTL 300s) sem step de confirmação.**
+Evidência: `src/functions/emergency.functions.ts:142-155` gera signed URLs para últimos documentos; `src/routes/e.$token.tsx` consome direto. Há rate-limit (linhas 31-60) e cap em `access_count`, mas nenhuma confirmação humana antes do payload completo. Impacto: vazamento do QR = vazamento de alergias, medicamentos, contatos, e PDFs por 5min. Esforço: M (tela "Confirmar emergência" + reduzir documentos ao mínimo essencial).
 
-**A3. Deploy target divergente da stack obrigatória.**
-- Evidência: `vite.config.ts:12` `nitro({ preset: "vercel" })`, raiz contém `vercel.json` com `"buildCommand": "bun run build", "outputDirectory": ".vercel/output"`. Stack obrigatória (project-knowledge): "Deploy: Cloudflare Workers (gerenciado pelo Lovable Cloud)". `src/server.ts` exporta um handler `fetch(request, env, ctx)` no formato Worker — coexistindo com preset Vercel.
-- Impacto: build de produção emite artefatos Vercel; se o operador esperar runtime Worker (limites de CPU, env binding por request, sem Node host) o comportamento em prod difere de dev.
-- Esforço: P (trocar preset) — mas é decisão de produto.
-
-**A4. Race condition no `dashboard.tsx`: 6 `setState` após `await Promise.all` sem guarda de paciente vigente.**
-- Evidência: `dashboard.tsx:150-200` — ao mudar `patient.id` enquanto a request anterior ainda está em voo, os `setAppointments/setMedications/...` do efeito antigo podem sobrescrever os do novo paciente. Não há `abort` nem flag `cancelled`.
-- Impacto: dashboard exibe brevemente dados do paciente errado ao alternar no `PatientSelector`. Em UX de saúde isso é grave.
-- Esforço: P (introduzir flag `cancelled` ou migrar para `useQuery`).
+**A3. 4 FKs em `access_logs` com `ON DELETE SET NULL`; policy depende exclusivamente do snapshot.**
+Evidência: `pg_constraint` mostra `access_logs_{family,patient,user,emergency_link}_id_fkey ON DELETE SET NULL`. Policy: `(family_id_snapshot IS NOT NULL) AND is_family_member(family_id_snapshot)`. Mitigação por trigger `access_logs_set_snapshots`. Impacto: se um INSERT futuro escapar do trigger (ex: outra função SECURITY DEFINER), a auditoria fica órfã e silenciosamente invisível. Esforço: P (adicionar `CHECK (family_id_snapshot IS NOT NULL)` ou tornar coluna `NOT NULL`).
 
 ### MÉDIO
 
-**M1. Endpoint público de emergência `/e/$token` sem rate-limit nem CAPTCHA.**
-- Evidência: `src/routes/e.$token.tsx` chama `logEmergencyAccess` sem cooldown; `emergency.functions.ts:21` apenas valida o token e incrementa `access_count`. Token = 32 bytes hex (alta entropia, OK), mas `is_active`/`expires_at` são opcionais e podem ser nulos (migration `…170407:561-565` — `expires_at timestamptz` é nullable, `is_active boolean default true`).
-- Impacto: quem souber/adivinhar a URL pode enumerar dados do paciente (alergias, medicamentos, contatos) e gerar signed URLs ilimitadas. Adversário pode rodar varredura de tokens (improvável dado o espaço, mas sem limite por IP).
-- Esforço: M (adicionar rate-limit por IP em KV/Postgres e/ou cap em `access_count`).
+**M1. Webhook `dose-action` valida JWT mas não checa idempotência por `jti`.**
+Evidência: `src/routes/api/public/hooks/dose-action.ts:52-106` decodifica HS256 e insere em `medication_doses`. Sem `jti` no payload nem unique constraint composta. Impacto: reenvio do mesmo link de notificação cria doses duplicadas. Esforço: P (UNIQUE em `(medication_id, scheduled_for)`).
 
-**M2. Signed URLs do bucket `medical-documents` retornadas no payload público de emergência.**
-- Evidência: `emergency.functions.ts:105-123` gera signed URLs (TTL 3600s) para os últimos 5 documentos e devolve no JSON. `e.$token.tsx` (PublicEmergencyPage) consome.
-- Impacto: documentos clínicos sensíveis ficam acessíveis por 1h via URL não autenticada, encadeada a um token compartilhável (QR Code). Vazamento do QR = vazamento dos PDFs.
-- Esforço: M (reduzir TTL, exigir step de "confirmar emergência" antes de gerar URLs, ou servir documentos proxyados com nova validação do token).
+**M2. Bundle `pdfjs-dist` (777kB) gerado em `dist/server/_libs/` mesmo com rota `ssr:false`.**
+Evidência: output do build. Worker tem cap de 10MB compressed; sobra margem, mas é o primeiro a estourar. Impacto: cold-start maior + risco de cap se 1-2 libs pesadas entrarem. Esforço: M (`build.rollupOptions.external` no SSR env requer cuidado — ver memo TanStack que proíbe `ssr.external` cru; alternativa é confinar `react-pdf` via `lazy()` que já é feito, e investigar `vite-plugin-singlefile` ou import dinâmico mais agressivo).
 
-**M3. `medications.frequency` e `appointments.type` desalinhados entre frontend e DB.**
-- Evidência: `agenda.ts:5-12` define `APPOINTMENT_TYPES` com valores `physiotherapy` e `vaccination`, mas o CHECK no banco (`…170407:431`) só aceita `('consultation','exam','return','procedure','therapy','vaccine','other')`. Tentar gravar `physiotherapy` ou `vaccination` causa erro 23514.
-- Impacto: criar consulta com esses dois tipos quebra silenciosamente; vazado para o usuário como toast genérico.
-- Esforço: P (alinhar enums — preferir alterar `agenda.ts` para `therapy`/`vaccine`).
+**M3. `dashboard.tsx` com 928 linhas em um único arquivo de rota.**
+Evidência: `wc -l src/routes/_authenticated/dashboard.tsx`. 7 `useQuery` + 6 canais realtime + skeleton + JSX. Impacto: manutenção; risco de re-render por mudança trivial. Esforço: M (extrair os 6 blocos para componentes em `src/components/dashboard/`).
 
-**M4. `documentos.index.tsx:161` faz `update({ deleted_at })` sem `deleted_by` (todas as outras telas setam ambos).**
-- Evidência: comparar `paciente.$id.tsx:712`, `medicamentos.index.tsx:108`, `agenda.index.tsx:170`, `historico.tsx:123` (todos com `deleted_by: userId`) vs `documentos.index.tsx:159-163` (apenas `deleted_at`).
-- Impacto: trilha de auditoria perdida em deletes de documento — quem apagou?
-- Esforço: P.
+**M4. `src/functions/` coexiste com `src/lib/*.functions.ts`.**
+Evidência: `src/functions/emergency.functions.ts` é o único arquivo fora do padrão `src/lib/`. Impacto: convenção quebrada, future contributors podem duplicar. Esforço: P.
 
-**M5. `useActivePatient` e dashboard fazem 6 queries em paralelo no client por troca de paciente; nenhum índice em `(patient_id, deleted_at)` para tabelas além de `clinical_events`.**
-- Evidência: M4 cria índice composto só para `clinical_events`. Outras tabelas têm índice em `patient_id` e índice separado em `deleted_at`, mas Postgres não combina eficientemente — toda query vai usar `idx_*_patient_id` e filtrar `deleted_at` em memória.
-- Impacto: hoje OK (poucas linhas por paciente). Não é problema medível agora; vira problema quando paciente tem centenas de medicamentos/eventos históricos.
-- Esforço: P (CREATE INDEX com WHERE deleted_at IS NULL).
-
-**M6. Risco de re-render no `dashboard.tsx` por `useState` de 6 entidades + 1 efeito enorme.**
-- Evidência: 6 estados independentes em `PatientDashboard` (`dashboard.tsx:140-145`); cada `setState` causa rerender de toda a subtree. Não há `useReducer`/`useQuery`.
-- Impacto: BAIXO hoje (sem listas grandes); MÉDIO se virar tela com realtime.
-- Esforço: M (refatorar para React Query).
+**M5. 50+ `as any` em `src/routeTree.gen.ts`.**
+Evidência: 50 ocorrências no arquivo. **Auto-gerado**, esperado pela TanStack Router (não editar). Listo apenas para descartar como falso positivo de busca por `any`.
 
 ### BAIXO
 
-**B1.** `src/lib/agenda.ts` exporta `APPOINTMENT_STATUSES` com classes Tailwind hard-coded (`bg-blue-100`, `bg-emerald-100`) em vez de tokens semânticos do design system (`styles.css`). Inconsistente com o restante.
-**B2.** `__root.tsx:90-91` expõe `og:image` apontando para domínio de preview (`pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/...id-preview...lovable.app...`) — em produção isso fica preso ao preview.
-**B3.** Várias `as string` em `familia.functions.ts:56,73,89,...` que poderiam ser tipadas via generics do Database.
-**B4.** `src/integrations/supabase/types.ts:245,268,291` tipa `search_vector` como `unknown` — esperado (não há tsvector no TS), mas força o `textSearch` a depender de string mágica.
-**B5.** Apenas 3 `console.error/log` em todo `src/routes|lib|functions` — bom isolamento, sem ruído.
+**B1.** `src/integrations/supabase/types.ts` tipa `search_vector` como `unknown` (gerado), força `textSearch` a depender de string mágica.
+**B2.** Apenas 9 `console.error` em todo `src/` — bom isolamento, nenhum `console.log` espúrio.
+**B3.** Service worker `public/sw.js` sem estratégia offline / cache de assets — PWA é instalável mas não funciona offline.
+**B4.** Linter Supabase reporta `WARN 0014 Extension in Public` (pg_cron/pg_net) — padrão da plataforma Supabase, documentado, não acionável pelo app.
+**B5.** Token de `emergency_links` nunca é rotacionado automaticamente — `expires_at` é nullable (default sem expiração). UX permite revogar manualmente, mas falta política de TTL padrão.
 
 ## Itens NÃO VERIFICÁVEIS
 
-| Item | Como verificar (operador) |
+| Item | Comando/SQL de verificação |
 |---|---|
-| Cron de purga LGPD de `access_logs` (>90d) está rodando? | `SELECT * FROM cron.job WHERE command ILIKE '%access_logs%';` e `SELECT min(created_at), max(created_at), count(*) FROM public.access_logs;` (esperado: min > now()-90d se cron rodou) |
-| Bundle real em produção / runtime Worker funcional | Publicar e fazer `curl -I https://<projeto>.lovable.app/` + `curl https://<projeto>.lovable.app/api/...`; medir cold start |
-| Tokens de `emergency_links` em uso (entropia, reuso) | `SELECT count(*), count(distinct token), max(access_count), avg(access_count) FROM public.emergency_links;` |
-| Volume de logs e crescimento de `documents` | `SELECT pg_size_pretty(pg_total_relation_size('public.documents'));` e `SELECT date_trunc('day', created_at), count(*) FROM access_logs GROUP BY 1 ORDER BY 1 DESC LIMIT 30;` |
-| Há documentos com `file_path` quebrado (objeto inexistente no bucket)? | Comparar `SELECT file_path FROM public.documents WHERE deleted_at IS NULL` contra listagem do bucket `medical-documents` |
-| Existe alguma policy que vaze dados entre famílias na prática | `SELECT * FROM pg_policies WHERE schemaname='public' ORDER BY tablename, policyname;` revisado manualmente; rodar query como dois usuários distintos no SQL editor com `SET LOCAL ROLE authenticated; SET request.jwt.claim.sub TO '<uuid>';` |
-| Lint frontend / typecheck em pipeline | `bun run lint && bun x tsc --noEmit` (não executado nesta auditoria) |
-| Métricas de performance, memória, cold start, bundle size real | Lighthouse + Cloudflare/Vercel analytics na URL publicada |
+| Push real chega ao device | Publicar em HTTPS, instalar como PWA (iOS exige), conceder permissão, aguardar próximo slot do cron |
+| Cron de purga LGPD efetivamente apaga linhas antigas | `SELECT min(created_at), max(created_at), count(*) FROM public.access_logs;` (esperado: min > now()-90d após 1 ciclo) |
+| Cron de reminders está disparando | `SELECT runid, job_pid, status, return_message, start_time FROM cron.job_run_details WHERE jobid IN (SELECT jobid FROM cron.job WHERE jobname='send-medication-reminders-5min') ORDER BY start_time DESC LIMIT 10;` |
+| Bundle do Worker em runtime cabe nos 10MB | publicar e medir; `wrangler deploy --dry-run --outdir=tmp && du -sh tmp/` |
+| Cold-start real do Worker | curl com `-w '%{time_total}'` após período de inatividade |
+| Documentos com `file_path` quebrado | comparar `SELECT file_path FROM public.documents WHERE deleted_at IS NULL` vs listagem do bucket |
+| Tokens de emergência em uso, entropia, reuso | `SELECT count(*), count(DISTINCT token), max(access_count), avg(access_count), max(created_at) FROM public.emergency_links;` |
+| Volume de doses inseridas via webhook vs UI | `SELECT date_trunc('day', created_at), count(*) FROM public.medication_doses GROUP BY 1 ORDER BY 1 DESC LIMIT 30;` |
+| Vazamento entre famílias (teste empírico) | Criar dois usuários em famílias distintas e tentar `SELECT * FROM patients` de cada uma |
+| Lighthouse PWA score | Rodar no app publicado |
+| Typecheck CI | `bunx tsgo --noEmit` (não executado nesta auditoria) |
 
-## Nota de Prontidão: **6/10**
+## Nota de Prontidão: **8/10**
 
-Builda, fluxos principais funcionam, sem CRÍTICOS de segurança ou integridade encontrados. Penalidades: A1 (FK `set null` em logs forenses), A2 (gate de auth duplicado em 20 rotas), A3 (deploy target divergente), A4 (race no dashboard), M1/M2 (superfície pública de emergência sem rate-limit e signed URLs longas). Nenhum bloqueia lançamento de beta fechado; A1 e M1 devem ser fechados antes de público geral.
+**Justificativa.** Sem CRÍTICOS. Build verde, RLS+GRANTs em todas as 18 tabelas, gate único, soft delete consistente, FTS, índices parciais, cron LGPD, snapshots forenses, rate-limit em endpoint público de emergência, push pipeline funcional. Penalidades: A1 (webhook de reminders sem assinatura — exploração trivial), A2 (superfície de emergência ainda devolve PDFs por 5min sem confirmação), A3 (snapshot em `access_logs` é convenção, não constraint). Fechar A1+A2 sobe para 9.

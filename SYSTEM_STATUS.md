@@ -2,50 +2,54 @@
 
 ## Estado Atual
 
-- Build: ✅ `bun run build` passa (Cloudflare Worker preset, output `dist/`).
-- Banco: 16 tabelas, 39 policies RLS, GRANTs corretos.
-- Rotas privadas centralizadas em `src/routes/_authenticated/`.
-- Server functions: `logEmergencyAccess` com rate-limit, cap 1000, signed URLs TTL 300s.
-- `access_logs` com snapshots forenses (`family_id_snapshot`, `patient_id_snapshot`).
-- Dashboard sem race condition ao trocar paciente.
-- Enums `appointments.type` alinhados front↔DB.
-- Soft delete em documentos com `deleted_by`.
-- Índices parciais `(patient_id) WHERE deleted_at IS NULL` em 6 tabelas clínicas.
-- Status de agendamento usando tokens semânticos.
-- Root sem `og:image` global.
-- `familia.functions.ts` sem `as string` — tipagem inferida + null-guards explícitos.
-- `PatientDashboard` migrado para React Query (7 `useQuery` keyed por `patientId`) com cancelamento via `abortSignal`.
-- Visualizador PDF inline em `documentos/$id` via `react-pdf`, com fallback `window.open`.
-- Manifest PWA + ícones 192/512 + apple-touch-icon: instalável em Chrome mobile.
-- Realtime em `medications`, `appointments`, `medication_doses`; dashboard invalida queries por canal.
-- Cron LGPD: `purge-access-logs-90d` (03:15 UTC) + `purge-emergency-rate-limits-1d` (03:20 UTC) via pg_cron.
+- Build: ✅ `bun run build` ~7.5s, preset `cloudflare_module`, sem erros.
+- Código: 116 arquivos TS/TSX, 29 rotas (28 páginas + 2 endpoints `/api/public/*`).
+- Banco: 18 tabelas, RLS=true em todas, 49 policies (`pg_policies`), 7 índices parciais clínicos.
+- Cron jobs ativos (`cron.job`): `purge-access-logs-90d` (03:15 UTC), `purge-emergency-rate-limits-1d` (03:20 UTC), `send-medication-reminders-5min`.
+- Gate único de auth: `src/routes/_authenticated/route.tsx` (`ssr:false`).
+- Server fns: `createServerFn` + `supabaseAdmin` lazy-loaded; emergência com rate-limit, cap 1000, signed URLs TTL 300s.
+- `access_logs` com snapshots forenses + trigger.
+- Dashboard com React Query (7 `useQuery`) + Realtime em 3 canais + `AbortSignal`.
+- Visualizador PDF inline em `documentos/$id` (`ssr:false`, `react-pdf` lazy 777kB chunk).
+- PWA: manifest + ícones + `public/sw.js` para Web Push VAPID artesanal (compatível com Worker).
+- Push pipeline: VAPID JWT ES256 + AES-128-GCM em `src/lib/push.server.ts`; webhook `dose-action` com JWT HS256.
+- Tipagem limpa em código autoral; `as any` apenas em `routeTree.gen.ts` (auto-gerado).
+- Tokens semânticos de cor; sem `og:image` global no root.
 
-## Nota de Prontidão: **9.6/10**
+## Nota de Prontidão: **8/10**
 
-(Roadmap 100% concluído: P0-L1 + P1-L1 + P1-L2 + P2-L1 + P2-L2 + P2-L3 + P3-L1 + P4-L1.)
-
-## Auditoria Geral (2026-06-25)
-
-- **Build**: ✅ ~10s, preset `cloudflare_module`.
-- **Bundle**: 108 arquivos TS/TSX, 28 rotas. Maior chunk: `pdfjs-dist` (777kB, lazy).
-- **Banco**: 16 tabelas, 39 policies RLS, 7 índices parciais clínicos, 2 cron jobs ativos.
-- **Segurança**: rate-limit emergência, snapshots forenses, signed URLs 5min, gate único `_authenticated/`.
-- **Linter Supabase**: 5 INFO/WARN pré-existentes (security definer functions + pg_cron/pg_net em `public`) — padrão Supabase, documentado.
+Sem CRÍTICOS. ALTOS abertos: webhook de reminders sem assinatura, superfície pública de emergência devolve PDFs sem step de confirmação, snapshot em `access_logs` é convenção (não constraint).
 
 ## Riscos Abertos
 
-### CRÍTICO / ALTO / MÉDIO / BAIXO
+### CRÍTICO
 Nenhum.
 
-### Dívida residual (aceita)
-- `search_vector` como `unknown` em `types.ts` (auto-gerado, inofensivo em runtime).
-- PWA manifest-only (sem service worker / offline) — política da plataforma.
+### ALTO
+- **A1** Webhook `/api/public/hooks/send-medication-reminders` sem assinatura HMAC — exploração trivial por terceiros (push spam).
+- **A2** Cartão de emergência `/e/$token` devolve dados clínicos + signed URLs (TTL 5min) sem confirmação humana.
+- **A3** 4 FKs `ON DELETE SET NULL` em `access_logs`; policy depende do snapshot setado por trigger — sem `CHECK` que garanta.
+
+### MÉDIO
+- **M1** Webhook `dose-action` sem idempotência por `jti` ou UNIQUE composta — risco de doses duplicadas em reenvio.
+- **M2** `pdfjs-dist` 777kB emitido em `dist/server/_libs/` mesmo com rota `ssr:false` — cap de 10MB do Worker preserva margem, mas é o primeiro a estourar.
+- **M3** `dashboard.tsx` com 928 linhas — extrair os 6 blocos para componentes.
+- **M4** `src/functions/emergency.functions.ts` fora do padrão `src/lib/*.functions.ts`.
+
+### BAIXO
+- **B1** `search_vector` tipado como `unknown` em `types.ts` (auto-gerado).
+- **B2** Service worker sem estratégia offline / cache de assets.
+- **B3** `emergency_links.expires_at` nullable (default sem TTL); rotação só manual.
+- **B4** Linter Supabase: WARN 0014 (pg_cron/pg_net em public), WARN 0029 (3 funções SECURITY DEFINER) — padrão da plataforma, documentado.
 
 ### Não verificável sem operador
-- Deploy real em Cloudflare Workers.
-- Lighthouse PWA score (precisa do app publicado).
-- Validação efetiva do cron de purga (24h após primeiro run).
+- Push real chegando ao device (requer HTTPS público + PWA).
+- Cron de purga efetivamente removendo linhas antigas (precisa ≥1 ciclo).
+- Bundle real do Worker (`wrangler deploy --dry-run` + medir).
+- Lighthouse PWA score.
+- Typecheck CI (`bunx tsgo --noEmit` não rodado nesta auditoria).
+- Vazamento entre famílias por teste empírico com 2 contas.
 
 ## Última Atualização
 
-2026-06-28 — Limpeza de redirects redundantes em 17 rotas filhas de `_authenticated/` (gate único cobre). Mantidos apenas redirects pós-`signOut` em `perfil.tsx`. Build + typecheck ✅. **Nota: 9.0/10**.
+2026-06-30 — Auditoria unificada (entregáveis 1–3). Sem alterações em código, banco, configs ou docs além destes três arquivos. **Nota: 8/10**.
