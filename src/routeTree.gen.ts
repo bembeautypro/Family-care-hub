@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as DesignRouteImport } from './routes/design'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ETokenRouteImport } from './routes/e.$token'
@@ -39,6 +40,11 @@ import { Route as AuthenticatedMedicamentosIdEditarRouteImport } from './routes/
 import { Route as AuthenticatedEventosIdEditarRouteImport } from './routes/_authenticated/eventos.$id.editar'
 import { Route as AuthenticatedAgendaIdEditarRouteImport } from './routes/_authenticated/agenda.$id.editar'
 
+const DesignRoute = DesignRouteImport.update({
+  id: '/design',
+  path: '/design',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -202,6 +208,7 @@ const AuthenticatedAgendaIdEditarRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/design': typeof DesignRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/emergencia': typeof AuthenticatedEmergenciaRoute
   '/familia': typeof AuthenticatedFamiliaRoute
@@ -232,6 +239,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/design': typeof DesignRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/emergencia': typeof AuthenticatedEmergenciaRoute
   '/familia': typeof AuthenticatedFamiliaRoute
@@ -264,6 +272,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/design': typeof DesignRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/emergencia': typeof AuthenticatedEmergenciaRoute
   '/_authenticated/familia': typeof AuthenticatedFamiliaRoute
@@ -296,6 +305,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/design'
     | '/dashboard'
     | '/emergencia'
     | '/familia'
@@ -326,6 +336,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/design'
     | '/dashboard'
     | '/emergencia'
     | '/familia'
@@ -357,6 +368,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/design'
     | '/_authenticated/dashboard'
     | '/_authenticated/emergencia'
     | '/_authenticated/familia'
@@ -389,6 +401,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  DesignRoute: typeof DesignRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegistroRoute: typeof AuthRegistroRoute
   ConviteTokenRoute: typeof ConviteTokenRoute
@@ -399,6 +412,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/design': {
+      id: '/design'
+      path: '/design'
+      fullPath: '/design'
+      preLoaderRoute: typeof DesignRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -662,6 +682,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  DesignRoute: DesignRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegistroRoute: AuthRegistroRoute,
   ConviteTokenRoute: ConviteTokenRoute,
