@@ -193,29 +193,67 @@ function InvalidLink() {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
+function ConfirmGate({ onConfirm }: { onConfirm: () => void }) {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-6 text-center">
+      <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
+        <AlertTriangle className="h-10 w-10 text-red-600" />
+      </div>
+      <p className="text-sm font-bold uppercase tracking-widest text-red-600">
+        Amparo · Emergência
+      </p>
+      <h1 className="mt-4 text-2xl font-bold text-gray-900">
+        Acesso ao cartão de emergência
+      </h1>
+      <p className="mt-3 max-w-sm text-base text-gray-600">
+        Você está prestes a visualizar dados clínicos sensíveis (alergias,
+        medicamentos, condições e documentos). <strong>Cada acesso é
+        registrado</strong> e notificado aos cuidadores responsáveis.
+      </p>
+      <p className="mt-2 max-w-sm text-sm text-gray-500">
+        Confirme apenas se você é um profissional de saúde, socorrista ou
+        responsável atendendo o paciente neste momento.
+      </p>
+      <button
+        type="button"
+        onClick={onConfirm}
+        className="mt-8 inline-flex min-h-[52px] w-full max-w-xs items-center justify-center rounded-xl bg-red-600 px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-red-700 active:bg-red-800"
+      >
+        Confirmar acesso de emergência
+      </button>
+      <p className="mt-6 text-xs text-gray-400">
+        Ao continuar, o IP e o dispositivo serão registrados no log de auditoria.
+      </p>
+    </div>
+  );
+}
+
 function PublicEmergencyPage() {
   const { token } = Route.useParams();
 
-  const [loading, setLoading] = useState(true);
+  const [confirmed, setConfirmed] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [invalid, setInvalid] = useState(false);
   const [offline, setOffline] = useState(false);
   const [data, setData] = useState<EmergencyData | null>(null);
 
   useEffect(() => {
+    if (!confirmed) return;
+    let cancelled = false;
+
     async function fetchData() {
+      setLoading(true);
       const isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
 
-      // Offline: try cache first
       if (!isOnline) {
         const cached = loadCache(token);
+        if (cancelled) return;
         if (cached) {
           setData(cached);
           setOffline(true);
-          setLoading(false);
-          return;
+        } else {
+          setInvalid(true);
         }
-        // No cache and offline → show invalid (cannot do anything)
-        setInvalid(true);
         setLoading(false);
         return;
       }
@@ -229,37 +267,31 @@ function PublicEmergencyPage() {
               typeof navigator !== "undefined" ? navigator.userAgent : "",
           },
         });
+        if (cancelled) return;
         saveCache(token, result);
         setData(result);
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "";
-        if (msg.includes("LINK_INVALID")) {
-          // Try cache as fallback before showing invalid
-          const cached = loadCache(token);
-          if (cached) {
-            setData(cached);
-            setOffline(true);
-          } else {
-            setInvalid(true);
-          }
+        if (cancelled) return;
+        const cached = loadCache(token);
+        if (cached) {
+          setData(cached);
+          setOffline(true);
         } else {
-          // Network/unexpected error — try cache
-          const cached = loadCache(token);
-          if (cached) {
-            setData(cached);
-            setOffline(true);
-          } else {
-            setInvalid(true);
-          }
+          setInvalid(true);
         }
+        void err;
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
 
     void fetchData();
-  }, [token]);
+    return () => {
+      cancelled = true;
+    };
+  }, [confirmed, token]);
 
+  if (!confirmed) return <ConfirmGate onConfirm={() => setConfirmed(true)} />;
   if (loading) return <LoadingSkeleton />;
   if (invalid || !data) return <InvalidLink />;
 
