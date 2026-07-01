@@ -7,7 +7,7 @@ export const MEDICAL_DOCS_BUCKET = "medical-documents";
  * `medical-documents`. Sempre prefira esta função em vez de armazenar/exibir
  * URLs públicas — o bucket é PRIVADO e o `file_path` é o que vive no banco.
  *
- * Convenção de path: `{family_id}/{patient_id}/{filename}` (alinhado às RLS
+ * Convenção de path: `patients/{patient_id}/{filename}` (alinhado às RLS
  * policies de storage.objects definidas na migration de fundação).
  */
 export async function getSignedMedicalDocUrl(
