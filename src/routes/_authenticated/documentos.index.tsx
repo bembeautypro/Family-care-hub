@@ -117,6 +117,32 @@ function DocumentosList() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active?.id, searchQuery]);
 
+  // Realtime: revalida a lista quando qualquer documento do paciente ativo muda.
+  // RLS filtra os eventos server-side — só chegam mudanças que o usuário pode ver.
+  useEffect(() => {
+    if (!active) return;
+    const patientId = active.id;
+    const channel = supabase
+      .channel(`documents:${patientId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "documents",
+          filter: `patient_id=eq.${patientId}`,
+        },
+        () => {
+          void load(searchQuery);
+        },
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active?.id, searchQuery]);
+
   function handleSearchChange(value: string) {
     setSearchInput(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
